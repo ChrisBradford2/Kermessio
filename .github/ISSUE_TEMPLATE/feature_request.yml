@@ -1,0 +1,49 @@
+name: Feature request
+description: Proposez une nouvelle fonctionnalité
+title: '[FEATURE]: '
+labels: ['feature']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci de prendre le temps de remplir ce formulaire de demande de fonctionnalité !
+  - type: textarea
+    id: feature-problem
+    attributes:
+      label: Description
+      description: Description détaillée de la fonctionnalité que vous souhaitez ajouter, y compris son objectif et son fonctionnement.
+      placeholder: Écrivez la description de la fonctionnalité ici...
+      value: 'En tant que [utilisateur], je veux [action], afin de [objectif].'
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solution technique
+      description: Solution technique que vous proposez pour implémenter cette fonctionnalité.
+      placeholder: 'Écrivez la solution technique ici...'
+      value: 'Ajouter une nouvelle route [route] qui retourne [réponse] lorsque [condition].'
+    validations:
+      required: true
+  - type: input
+    id: time
+    attributes:
+      label: Temps de développement estimé
+      description: Temps de développement estimé pour cette fonctionnalité.
+      placeholder: 'Écrivez le temps de développement estimé ici...'
+      value: '1h 30min'
+    validations:
+      required: true
+  - type: textarea
+    id: additionnal
+    attributes:
+      label: Critères d'acceptation
+      description: Liste des critères d'acceptation de cette fonctionnalité.
+      placeholder: "Écrivez les critères d'acceptation ici..."
+      value: |
+        - [ ] Lorsque [condition], alors [réponse].
+        - [ ] La route [route] retourne [réponse] lorsque [condition].
+        - [ ] Je peux [action] depuis [endroit].
+    validations:
+      required: true

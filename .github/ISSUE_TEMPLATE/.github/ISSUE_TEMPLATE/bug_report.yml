@@ -1,0 +1,50 @@
+name: Bug Report
+description: Reporter un bug
+title: '[Bug]: '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci de prendre le temps de remplir ce formulaire de rapport de bug !
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Qu'est-ce qui s'est passé ?
+      description: Décrivez le bug que vous avez rencontré.
+      placeholder: Écrivez la description du bug ici...
+      value: "Lorsque je fais [action], il se passe [réponse reçue] alors que je m'attendais à [réponse attendue]."
+    validations:
+      required: true
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: Sur quel navigateur avez-vous rencontré le bug ?
+      description: Si vous avez rencontré le bug sur plusieurs navigateurs, sélectionnez-les tous.
+      multiple: true
+      options:
+        - Firefox
+        - Chrome
+        - Safari
+        - Microsoft Edge
+        - Internet Explorer
+        - Opera
+        - Brave
+        - Vivaldi
+        - Autre
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Si vous avez des logs ou des messages d'erreur, veuillez les copier ici.
+      render: shell
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Si vous avez des captures d'écran, veuillez les ajouter ici.
+  - type: textarea
+    id: additional
+    attributes:
+      label: Informations supplémentaires
+      description: Si vous avez des informations supplémentaires, veuillez les ajouter ici.

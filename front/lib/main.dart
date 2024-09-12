@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'repositories/auth_repository.dart';
 import 'blocs/auth_bloc.dart';
 import 'screens/login_page.dart';
@@ -12,14 +14,19 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  final AuthRepository authRepository = AuthRepository();
+  MyApp({super.key});
 
-  MyApp({super.key}); // Initialize the repository
+  void initStripe() {
+    Stripe.publishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY']!;
+    Stripe.instance.applySettings();
+  }
+
+  final AuthRepository authRepository = AuthRepository();
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => AuthBloc(authRepository: authRepository), // Provide AuthBloc to the app
+      create: (context) => AuthBloc(authRepository: authRepository),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Kermessio',

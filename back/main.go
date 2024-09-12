@@ -76,6 +76,8 @@ func main() {
 	})
 
 	routes.AuthRoutes(r)
+	routes.UserRoutes(r)
+	routes.PaymentIntentRoutes(r)
 
 	// Swagger documentation
 	docs.SwaggerInfo.Title = "Kermessio API"

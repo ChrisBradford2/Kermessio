@@ -1,0 +1,40 @@
+version: "3.7"
+services:
+  database:
+    image: postgres:11.5
+    container_name: kermessio_database
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: kermessio
+      POSTGRES_DB: kermessio
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    container_name: kermessio_adminer
+    ports:
+      - "8081:8080"
+    depends_on:
+      - database
+
+  app:
+    build: .
+    container_name: kermessio_app
+    depends_on:
+      - database
+    environment:
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: kermessio
+      DB_NAME: kermessio
+    volumes:
+      - ./:/app
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:

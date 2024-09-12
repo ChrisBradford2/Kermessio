@@ -8,6 +8,8 @@ type User struct {
 	Email     string `gorm:"unique" json:"email" binding:"required" example:"john.doe@exmple.com"`
 	Password  string `gorm:"not null" json:"password" binding:"required" example:"password"`
 	Role      string `json:"role" gorm:"not null" binding:"required" example:"user"`
+	ParentID  *uint  `gorm:"default:null"`        // If the user is a child, this will reference their parent's ID
+	Parent    *User  `gorm:"foreignKey:ParentID"` // Relationship to parent
 }
 
 type UserRegister struct {

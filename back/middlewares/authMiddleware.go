@@ -5,6 +5,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"kermessio/config"
 	"kermessio/controllers"
+	"kermessio/database"
+	"kermessio/models"
 	"net/http"
 	"time"
 )
@@ -37,8 +39,16 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Set the username in the context for further use
-		c.Set("username", claims.Username)
+		// Retrieve the user from the database using the username from claims
+		var user models.User
+		if err := database.DB.Where("username = ?", claims.Username).First(&user).Error; err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+			c.Abort()
+			return
+		}
+
+		// Set the user in the context for further use
+		c.Set("currentUser", user)
 		c.Next()
 	}
 }

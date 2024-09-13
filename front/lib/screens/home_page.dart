@@ -46,29 +46,22 @@ class HomePage extends StatelessWidget {
                   if (state is AuthAuthenticated) {
                     return Column(
                       children: [
-                        Text(
-                          "Bonjour, ${state.user.username}!",
-                          style: const TextStyle(fontSize: 20),
+                        const Text(
+                          "Vous êtes connecté avec succès !",
+                          style: TextStyle(fontSize: 20),
                         ),
                         const SizedBox(height: 20.0),
-                        if (state.user.role == 'parent') ...[
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => const CreateChildPage()),
-                              );
-                            },
-                            child: const Text("Créer un compte enfant"),
-                          ),
-                        ] else if (state.user.role == 'teneur_stand') ...[
-                          ElevatedButton(
-                            onPressed: () {
-                              // Action spécifique pour le teneur de stand
-                            },
-                            child: const Text("Gérer les stands"),
-                          ),
-                        ]
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const CreateChildPage()),
+                            );
+                          },
+                          child: const Text("Créer un compte enfant"),
+                        ),
                       ],
                     );
                   }
@@ -81,7 +74,8 @@ class HomePage extends StatelessWidget {
                   context.read<AuthBloc>().add(AuthLogoutRequested());
                 },
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                   backgroundColor: Colors.redAccent,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),

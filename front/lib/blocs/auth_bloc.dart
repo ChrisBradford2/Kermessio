@@ -1,7 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../repositories/auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
-import '../repositories/auth_repository.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
@@ -17,8 +18,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _onLoginRequested(AuthLoginRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      final result = await authRepository.login(event.username, event.password);
-      emit(AuthAuthenticated(user: result.user, token: result.token));  // Pass both user and token
+      final token = await authRepository.login(event.username, event.password);
+      print(token);
+      emit(AuthAuthenticated(token: token));  // Pass only the token
     } catch (e) {
       emit(AuthError(message: e.toString()));
     }
@@ -33,8 +35,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _onRegisterRequested(AuthRegisterRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      final result = await authRepository.register(event.username, event.email, event.password);
-      emit(AuthAuthenticated(user: result.user, token: result.token));  // Pass both user and token
+      final token = await authRepository.register(event.username, event.email, event.password);
+      emit(AuthAuthenticated(token: token));  // Pass only the token
     } catch (e) {
       emit(AuthError(message: e.toString()));
     }

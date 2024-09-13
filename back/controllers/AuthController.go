@@ -97,6 +97,21 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	// Validate role
+	validRoles := []string{config.RoleParent, config.RoleChild, config.RoleBoothHolder, config.RoleOrganizer}
+	isValidRole := false
+	for _, role := range validRoles {
+		if input.Role == role {
+			isValidRole = true
+			break
+		}
+	}
+
+	if !isValidRole {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role provided"})
+		return
+	}
+
 	// Hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {

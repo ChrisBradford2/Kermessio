@@ -2,10 +2,10 @@ package config
 
 // Define the different roles in the system
 const (
-	RoleParent       = "parent"
-	RoleEnfant       = "enfant"
-	RoleTeneurStand  = "teneur_stand"
-	RoleOrganisateur = "organisateur"
+	RoleParent      = "parent"
+	RoleChild       = "child"
+	RoleBoothHolder = "booth_holder"
+	RoleOrganizer   = "organizer"
 )
 
 // RolePermissions holds the permissions for each role
@@ -34,7 +34,7 @@ func GetRolePermissions(role string) RolePermissions {
 			CanManageTombola:           false,
 			CanSendChatMessages:        false,
 		}
-	case RoleEnfant:
+	case RoleChild:
 		return RolePermissions{
 			CanBuyTokens:               false,
 			CanDistributeTokens:        false,
@@ -45,7 +45,7 @@ func GetRolePermissions(role string) RolePermissions {
 			CanManageTombola:           false,
 			CanSendChatMessages:        false,
 		}
-	case RoleTeneurStand:
+	case RoleBoothHolder:
 		return RolePermissions{
 			CanBuyTokens:               false,
 			CanDistributeTokens:        false,
@@ -56,7 +56,7 @@ func GetRolePermissions(role string) RolePermissions {
 			CanManageTombola:           false,
 			CanSendChatMessages:        true,
 		}
-	case RoleOrganisateur:
+	case RoleOrganizer:
 		return RolePermissions{
 			CanBuyTokens:               false,
 			CanDistributeTokens:        false,

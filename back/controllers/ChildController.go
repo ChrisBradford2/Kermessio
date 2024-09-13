@@ -14,18 +14,15 @@ import (
 // @Tags children
 // @Accept json
 // @Produce json
-// @Param input body struct{username string, password string} true "Child account details"
+// @Param request body models.ChildRequest true "Child Request"
 // @Security ApiKeyAuth
-// @Success 200 {object} gin.H{"message": "Child account created successfully", "child": "child_username"}
-// @Failure 400 {object} gin.H{"error": "Bad Request"}
-// @Failure 401 {object} gin.H{"error": "Unauthorized"}
-// @Failure 500 {object} gin.H{"error": "Failed to create child account"}
+// @Success 200 {object} models.ChildRequestResponse
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 401 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
 // @Router /user/child [post]
 func CreateChild(c *gin.Context) {
-	var input struct {
-		Username string `json:"username" binding:"required"`
-		Password string `json:"password" binding:"required,min=6"`
-	}
+	var input models.ChildRequest
 
 	// Bind input from the request
 	if err := c.ShouldBindJSON(&input); err != nil {

@@ -5,15 +5,22 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stripe/stripe-go/v79"
 	"github.com/stripe/stripe-go/v79/paymentintent"
+	"kermessio/models"
 	"net/http"
 )
 
+// CreatePaymentIntent godoc
+// @Summary Create a payment intent
+// @Description Create a payment intent for purchasing tokens
+// @Tags PaymentIntent
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param request body models.CreatePaymentIntentRequest true "Payment Intent Request"
+// @Success 200 {object} models.CreatePaymentIntentResponse
+// @Router /create-payment-intent [post]
 func CreatePaymentIntent(c *gin.Context) {
-	// Extract the amount and currency from the request (e.g., amount for purchasing tokens)
-	var request struct {
-		Amount   int64  `json:"amount"`   // Amount in the smallest currency unit (e.g., cents)
-		Currency string `json:"currency"` // e.g., "usd"
-	}
+	var request models.CreatePaymentIntentRequest
 
 	if err := c.BindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})

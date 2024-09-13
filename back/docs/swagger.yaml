@@ -1,4 +1,41 @@
 definitions:
+  models.ChildRequest:
+    properties:
+      password:
+        example: password
+        minLength: 6
+        type: string
+      username:
+        example: jdoe
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  models.ChildRequestResponse:
+    properties:
+      child:
+        type: string
+      message:
+        type: string
+    type: object
+  models.CreatePaymentIntentRequest:
+    properties:
+      amount:
+        example: 1000
+        type: integer
+      currency:
+        example: eur
+        type: string
+    required:
+    - amount
+    - currency
+    type: object
+  models.CreatePaymentIntentResponse:
+    properties:
+      clientSecret:
+        type: string
+    type: object
   models.ErrorResponse:
     properties:
       error:
@@ -30,6 +67,9 @@ definitions:
       password:
         example: password
         type: string
+      role:
+        example: parent
+        type: string
       username:
         example: jdoe
         type: string
@@ -38,6 +78,7 @@ definitions:
     - first_name
     - last_name
     - password
+    - role
     - username
     type: object
 info:
@@ -50,6 +91,66 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://swagger.io/terms/
 paths:
+  /create-payment-intent:
+    post:
+      consumes:
+      - application/json
+      description: Create a payment intent for purchasing tokens
+      parameters:
+      - description: Payment Intent Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreatePaymentIntentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CreatePaymentIntentResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a payment intent
+      tags:
+      - PaymentIntent
+  /user/child:
+    post:
+      consumes:
+      - application/json
+      description: Create a child account linked to the current authenticated parent
+      parameters:
+      - description: Child Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ChildRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ChildRequestResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a child account
+      tags:
+      - children
   /user/login:
     post:
       consumes:

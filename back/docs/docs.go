@@ -24,6 +24,102 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/create-payment-intent": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a payment intent for purchasing tokens",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PaymentIntent"
+                ],
+                "summary": "Create a payment intent",
+                "parameters": [
+                    {
+                        "description": "Payment Intent Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreatePaymentIntentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.CreatePaymentIntentResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/child": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a child account linked to the current authenticated parent",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "children"
+                ],
+                "summary": "Create a child account",
+                "parameters": [
+                    {
+                        "description": "Child Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ChildRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ChildRequestResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/user/login": {
             "post": {
                 "description": "Logs in a user",
@@ -124,6 +220,60 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.ChildRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "minLength": 6,
+                    "example": "password"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "jdoe"
+                }
+            }
+        },
+        "models.ChildRequestResponse": {
+            "type": "object",
+            "properties": {
+                "child": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CreatePaymentIntentRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "currency"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "currency": {
+                    "type": "string",
+                    "example": "eur"
+                }
+            }
+        },
+        "models.CreatePaymentIntentResponse": {
+            "type": "object",
+            "properties": {
+                "clientSecret": {
+                    "type": "string"
+                }
+            }
+        },
         "models.ErrorResponse": {
             "type": "object",
             "properties": {
@@ -156,6 +306,7 @@ const docTemplate = `{
                 "first_name",
                 "last_name",
                 "password",
+                "role",
                 "username"
             ],
             "properties": {
@@ -174,6 +325,10 @@ const docTemplate = `{
                 "password": {
                     "type": "string",
                     "example": "password"
+                },
+                "role": {
+                    "type": "string",
+                    "example": "parent"
                 },
                 "username": {
                     "type": "string",

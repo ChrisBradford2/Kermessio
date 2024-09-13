@@ -1,6 +1,7 @@
 package main
 
 import (
+	"kermessio/config"
 	"kermessio/database"
 	"kermessio/docs"
 	"kermessio/models"
@@ -37,6 +38,10 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using environment variables")
 	}
+
+	// Initialize Stripe with the API key
+	config.InitStripe()
+
 	// Database connection
 	if err := database.ConnectDatabase(); err != nil {
 		log.Fatalf("Could not connect to the database: %v", err)

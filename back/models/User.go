@@ -10,6 +10,7 @@ type User struct {
 	Role      string `json:"role" gorm:"not null" binding:"required" example:"user"`
 	ParentID  *uint  `gorm:"default:null"`        // If the user is a child, this will reference their parent's ID
 	Parent    *User  `gorm:"foreignKey:ParentID"` // Relationship to parent
+	Tokens    int    `json:"tokens" gorm:"default:0"`
 }
 
 type UserRegister struct {
@@ -18,7 +19,7 @@ type UserRegister struct {
 	FirstName string `json:"first_name" binding:"required" example:"John"`
 	Email     string `json:"email" binding:"required" example:"john.doe@exmple.com"`
 	Password  string `json:"password" binding:"required" example:"password"`
-	Role      string `json:"role" binding:"required" example:"user"`
+	Role      string `json:"role" binding:"required" example:"parent"`
 }
 
 type UserRegisterResponse struct {
@@ -27,8 +28,18 @@ type UserRegisterResponse struct {
 }
 
 type UserLogin struct {
-	Email    string `json:"email" binding:"required" example:"john.doe@exmple.com"`
+	Username string `json:"username" binding:"required" example:"jdoe"`
 	Password string `json:"password" binding:"required" example:"password"`
+}
+
+type ChildRequest struct {
+	Username string `json:"username" binding:"required" example:"jdoe"`
+	Password string `json:"password" binding:"required,min=6" example:"password"`
+}
+
+type ChildRequestResponse struct {
+	Message string `json:"message"`
+	Child   string `json:"child"`
 }
 
 // PublicUser omits sensitive data from user model

@@ -1,5 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:http/http.dart' as http;
 
+import '../models/user_model.dart';
 import '../repositories/auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -18,11 +20,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _onLoginRequested(AuthLoginRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      final token = await authRepository.login(event.username, event.password);
-      print(token);
-      emit(AuthAuthenticated(token: token));  // Pass only the token
+      final userWithToken = await authRepository.login(event.username, event.password);
+      final user = User.fromJson(userWithToken['user']);
+      final token = userWithToken['token'];
+
+      emit(AuthAuthenticated(user: user, token: token));
     } catch (e) {
-      emit(AuthError(message: e.toString()));
+      if (e is http.ClientException) {
+        emit(AuthError(message: "Problème de connexion au serveur"));
+      } else {
+        emit(AuthError(message: e.toString()));
+      }
     }
   }
 
@@ -35,8 +43,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _onRegisterRequested(AuthRegisterRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      final token = await authRepository.register(event.username, event.email, event.password);
-      emit(AuthAuthenticated(token: token));  // Pass only the token
+      emit(AuthUnauthenticated());
     } catch (e) {
       emit(AuthError(message: e.toString()));
     }

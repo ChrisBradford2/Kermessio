@@ -5,8 +5,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stripe/stripe-go/v79"
 	"github.com/stripe/stripe-go/v79/paymentintent"
+	"kermessio/database"
 	"kermessio/models"
+	"log"
 	"net/http"
+	"strconv"
 )
 
 // CreatePaymentIntent godoc
@@ -27,18 +30,34 @@ func CreatePaymentIntent(c *gin.Context) {
 		return
 	}
 
-	// Create the payment intent
+	user := c.MustGet("currentUser").(models.User)
+
 	params := &stripe.PaymentIntentParams{
 		Amount:   stripe.Int64(request.Amount),
 		Currency: stripe.String(request.Currency),
+		Metadata: map[string]string{
+			"user_id": strconv.Itoa(int(user.ID)),
+		},
 	}
 
 	pi, err := paymentintent.New(params)
+	log.Println("Payment intent created")
+	log.Println(pi)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to create payment intent: %v", err)})
 		return
 	}
 
-	// Return the client secret to the frontend to confirm the payment
+	if pi.Status == "succeeded" {
+		log.Println("Payment intent already succeeded")
+		tokensToAdd := request.Amount / 100 // 1€ = 1 jeton
+		err = database.DB.Model(&user).Update("tokens", user.Tokens+tokensToAdd).Error
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user tokens"})
+			return
+		}
+	}
+
+	// Retourner le client secret pour confirmer le paiement sur le frontend
 	c.JSON(http.StatusOK, gin.H{"clientSecret": pi.ClientSecret})
 }

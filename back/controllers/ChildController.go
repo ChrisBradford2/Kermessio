@@ -105,7 +105,7 @@ func GetChildren(c *gin.Context) {
 		publicChildren = append(publicChildren, models.PublicChild{
 			Base:     child.Base,
 			Username: child.Username,
-			Tokens:   child.Tokens,
+			Tokens:   int(child.Tokens),
 		})
 	}
 

@@ -10,7 +10,7 @@ type User struct {
 	Role      string `json:"role" gorm:"not null" binding:"required" example:"user"`
 	ParentID  *uint  `gorm:"default:null"`        // If the user is a child, this will reference their parent's ID
 	Parent    *User  `gorm:"foreignKey:ParentID"` // Relationship to parent
-	Tokens    int    `json:"tokens" gorm:"default:0"`
+	Tokens    int64  `json:"tokens" gorm:"default:0"`
 }
 
 type UserRegister struct {

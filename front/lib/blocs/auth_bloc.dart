@@ -1,8 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 
-import '../models/user_model.dart';
-import '../repositories/auth_repository.dart';
+import '../../models/user_model.dart';
+import '../../repositories/auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -25,13 +26,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final user = User.fromJson(userWithToken['user']);
       final token = userWithToken['token'];
 
+      if (token == null || token.isEmpty) {
+        throw Exception("Token invalide reçu lors de l'authentification");
+      }
+
       emit(AuthAuthenticated(user: user, token: token));
     } catch (e) {
-      if (e is http.ClientException) {
-        emit(AuthError(message: "Problème de connexion au serveur"));
-      } else {
-        emit(AuthError(message: e.toString()));
-      }
+      emit(AuthError(message: e.toString()));
     }
   }
 
@@ -61,7 +62,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         // Émettre un nouvel état avec l'utilisateur mis à jour
         emit(AuthAuthenticated(user: updatedUser, token: currentState.token));
       } catch (e) {
-        print(e);
+        if (kDebugMode) {
+          print(e);
+        }
         emit(AuthError(message: e.toString()));
       }
     }

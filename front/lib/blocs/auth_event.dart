@@ -34,3 +34,12 @@ class AuthRegisterRequested extends AuthEvent {
 }
 
 class AuthRefreshRequested extends AuthEvent {}
+
+class FetchChildrenRequested extends AuthEvent {
+  final String token;
+
+  FetchChildrenRequested({required this.token});
+
+  @override
+  List<Object?> get props => [token];
+}

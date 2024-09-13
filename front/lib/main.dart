@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:front/repositories/child_repository.dart';
+import 'blocs/child_bloc.dart';
 import 'repositories/auth_repository.dart';
 import 'blocs/auth_bloc.dart';
 import 'screens/login_page.dart';
@@ -21,21 +23,23 @@ void main() async {
   runApp(MyApp());
 }
 
-
 class MyApp extends StatelessWidget {
   MyApp({super.key});
 
-  void initStripe() {
-    Stripe.publishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY']!;
-    Stripe.instance.applySettings();
-  }
-
   final AuthRepository authRepository = AuthRepository();
+  final ChildRepository childRepository = ChildRepository();
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AuthBloc(authRepository: authRepository),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>(
+          create: (context) => AuthBloc(authRepository: authRepository),
+        ),
+        BlocProvider<ChildBloc>(
+          create: (context) => ChildBloc(childRepository: childRepository),
+        ),
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Kermessio',
@@ -43,39 +47,34 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        // Define routes for navigation
         routes: {
-          '/': (context) => const AuthWrapper(),
+          '/': (context) => AuthWrapper(),
           '/login': (context) => LoginPage(),
           '/register': (context) => const RegisterPage(),
           '/home': (context) => const HomePage(),
         },
-        initialRoute: '/', // Start the app on the AuthWrapper screen
+        initialRoute: '/',
       ),
     );
   }
 }
 
-// A widget to check if the user is authenticated or not
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final authBloc = context.read<AuthBloc>();
+    print("AuthBloc initialisé avec succès : $authBloc");
+
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         if (state is AuthAuthenticated) {
-          return const HomePage(); // If authenticated, show the home page
-        } else if (state is AuthUnauthenticated) {
-          return LoginPage(); // If not authenticated, show the login page
-        } else if (state is AuthLoading) {
-          return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(), // Show a loading spinner
-            ),
-          );
+          print("L'utilisateur est authentifié.");
+          return const HomePage();
         } else {
-          return LoginPage(); // By default, show the login page
+          print("L'utilisateur n'est pas authentifié.");
+          return LoginPage();
         }
       },
     );

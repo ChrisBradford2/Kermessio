@@ -13,5 +13,6 @@ func UserRoutes(r *gin.Engine) {
 		protected.GET("/user/me", controllers.GetUserDetails)
 		protected.POST("/user/child", controllers.CreateChild)
 		protected.GET("/user/child", controllers.GetChildren)
+		protected.POST("/user/child/:childId/tokens", controllers.AssignTokensToChild)
 	}
 }

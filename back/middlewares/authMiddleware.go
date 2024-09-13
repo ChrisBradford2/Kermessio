@@ -8,15 +8,25 @@ import (
 	"kermessio/database"
 	"kermessio/models"
 	"net/http"
+	"strings"
 	"time"
 )
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenString := c.GetHeader("Authorization")
-
-		if tokenString == "" {
+		// Extract the Authorization header
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization token required"})
+			c.Abort()
+			return
+		}
+
+		// Remove the "Bearer " prefix
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		if tokenString == authHeader {
+			// If the token doesn't have the "Bearer " prefix, return an error
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header format"})
 			c.Abort()
 			return
 		}

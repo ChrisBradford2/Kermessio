@@ -64,6 +64,41 @@ const docTemplate = `{
             }
         },
         "/user/child": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all children linked to the current authenticated parent",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "children"
+                ],
+                "summary": "Get all children linked to the current authenticated parent",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.PublicUser"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -282,27 +317,43 @@ const docTemplate = `{
                 }
             }
         },
+        "models.PublicUser": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_name": {
+                    "type": "string"
+                }
+            }
+        },
         "models.UserLogin": {
             "type": "object",
             "required": [
-                "email",
-                "password"
+                "password",
+                "username"
             ],
             "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "john.doe@exmple.com"
-                },
                 "password": {
                     "type": "string",
                     "example": "password"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "jdoe"
                 }
             }
         },
         "models.UserRegister": {
             "type": "object",
             "required": [
-                "email",
                 "first_name",
                 "last_name",
                 "password",
@@ -311,8 +362,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "email": {
-                    "type": "string",
-                    "example": "john.doe@exmple.com"
+                    "type": "string"
                 },
                 "first_name": {
                     "type": "string",

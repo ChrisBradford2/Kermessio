@@ -86,7 +86,7 @@ func Login(c *gin.Context) {
 func Register(c *gin.Context) {
 	var input struct {
 		Username string `json:"username" binding:"required"`
-		Email    string `json:"email" binding:"required,email"`
+		Email    string `json:"email" binding:"email"`
 		Password string `json:"password" binding:"required,min=6"`
 		Role     string `json:"role" binding:"required"`
 	}
@@ -109,6 +109,12 @@ func Register(c *gin.Context) {
 
 	if !isValidRole {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role provided"})
+		return
+	}
+
+	// For roles other than "child", ensure that an email is provided and valid
+	if input.Role != config.RoleChild && input.Email == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Email is required for non-child roles"})
 		return
 	}
 

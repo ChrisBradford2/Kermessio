@@ -55,7 +55,7 @@ func CreateChild(c *gin.Context) {
 	child := models.User{
 		Username: input.Username,
 		Password: string(hashedPassword),
-		Role:     "enfant",       // Role is set as "enfant"
+		Role:     "child",        // Role is set as "enfant"
 		ParentID: &parentUser.ID, // Link to the parent
 	}
 
@@ -66,4 +66,48 @@ func CreateChild(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Child account created successfully", "child": child.Username})
+}
+
+// GetChildren godoc
+// @Summary Get all children linked to the current authenticated parent
+// @Description Get all children linked to the current authenticated parent
+// @Tags children
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Success 200 {array} models.PublicChild
+// @Failure 401 {object} models.ErrorResponse
+// @Router /user/child [get]
+func GetChildren(c *gin.Context) {
+	parent, exists := c.Get("currentUser")
+	if !exists || parent == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Convert the parent to the User model
+	parentUser, ok := parent.(models.User)
+	if !ok || parentUser.Role != "parent" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Only parents can view children"})
+		return
+	}
+
+	// Get all children linked to the parent
+	var children []models.User
+	if err := database.DB.Where("parent_id = ?", parentUser.ID).Find(&children).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get children"})
+		return
+	}
+
+	// Convert the children to public users
+	var publicChildren []models.PublicChild
+	for _, child := range children {
+		publicChildren = append(publicChildren, models.PublicChild{
+			Base:     child.Base,
+			Username: child.Username,
+			Tokens:   child.Tokens,
+		})
+	}
+
+	c.JSON(http.StatusOK, publicChildren)
 }

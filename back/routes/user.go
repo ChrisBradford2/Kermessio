@@ -11,5 +11,6 @@ func UserRoutes(r *gin.Engine) {
 	protected.Use(middleware.AuthMiddleware())
 	{
 		protected.POST("/user/child", controllers.CreateChild)
+		protected.GET("/user/child", controllers.GetChildren)
 	}
 }

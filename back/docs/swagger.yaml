@@ -41,22 +41,32 @@ definitions:
       error:
         type: string
     type: object
-  models.UserLogin:
+  models.PublicUser:
     properties:
       email:
-        example: john.doe@exmple.com
         type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+    type: object
+  models.UserLogin:
+    properties:
       password:
         example: password
         type: string
+      username:
+        example: jdoe
+        type: string
     required:
-    - email
     - password
+    - username
     type: object
   models.UserRegister:
     properties:
       email:
-        example: john.doe@exmple.com
         type: string
       first_name:
         example: John
@@ -74,7 +84,6 @@ definitions:
         example: jdoe
         type: string
     required:
-    - email
     - first_name
     - last_name
     - password
@@ -116,6 +125,28 @@ paths:
       tags:
       - PaymentIntent
   /user/child:
+    get:
+      consumes:
+      - application/json
+      description: Get all children linked to the current authenticated parent
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.PublicUser'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all children linked to the current authenticated parent
+      tags:
+      - children
     post:
       consumes:
       - application/json

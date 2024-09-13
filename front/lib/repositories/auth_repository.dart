@@ -56,4 +56,23 @@ class AuthRepository {
       throw Exception("Erreur d'inscription");
     }
   }
+
+  Future<Map<String, dynamic>> getUserDetails(String token) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/user/me'), // Assure-toi que cette route existe dans ton backend
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token', // Utiliser le token pour authentifier la requête
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return {
+        'user': data['user'], // Assure-toi que le backend renvoie bien un objet "user"
+      };
+    } else {
+      throw Exception("Erreur lors de la récupération des informations de l'utilisateur");
+    }
+  }
 }

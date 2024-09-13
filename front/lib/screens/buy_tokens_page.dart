@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 
 import '../blocs/auth_bloc.dart';
+import '../blocs/auth_event.dart';
 import '../blocs/auth_state.dart';
 
 class BuyTokensPage extends StatefulWidget {
@@ -104,7 +105,7 @@ class _BuyTokensPageState extends State<BuyTokensPage> {
       if (response.statusCode == 200 && jsonResponse['clientSecret'] != null) {
         final clientSecret = jsonResponse['clientSecret'];
 
-        await _confirmPayment(clientSecret);
+        await _confirmPayment(context, clientSecret);
       } else {
         throw Exception('Failed to create payment intent');
       }
@@ -119,7 +120,8 @@ class _BuyTokensPageState extends State<BuyTokensPage> {
     }
   }
 
-  Future<void> _confirmPayment(String clientSecret) async {
+  // Confirmer le paiement et rediriger vers la page d'accueil
+  Future<void> _confirmPayment(BuildContext context, String clientSecret) async {
     try {
       await Stripe.instance.initPaymentSheet(paymentSheetParameters: SetupPaymentSheetParameters(
         paymentIntentClientSecret: clientSecret,
@@ -130,10 +132,16 @@ class _BuyTokensPageState extends State<BuyTokensPage> {
       // Afficher le PaymentSheet
       await Stripe.instance.presentPaymentSheet();
 
-      // Afficher un message de succès
+      // Paiement réussi, afficher un message de succès
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Paiement réussi ! Vos jetons ont été ajoutés.')),
       );
+
+      // Rediriger vers la page d'accueil après le paiement
+      Navigator.pushReplacementNamed(context, '/home');
+
+      // Mettre à jour les tokens après le paiement en déclenchant un événement
+      context.read<AuthBloc>().add(AuthRefreshRequested()); // Déclencher la mise à jour des tokens
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur lors du paiement : $e')),

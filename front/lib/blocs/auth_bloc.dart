@@ -14,6 +14,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthLoginRequested>(_onLoginRequested);
     on<AuthLogoutRequested>(_onLogoutRequested);
     on<AuthRegisterRequested>(_onRegisterRequested);
+    on<AuthRefreshRequested>(_onRefreshRequested);
   }
 
   // Handler for AuthLoginRequested event
@@ -46,6 +47,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthUnauthenticated());
     } catch (e) {
       emit(AuthError(message: e.toString()));
+    }
+  }
+
+  void _onRefreshRequested(AuthRefreshRequested event, Emitter<AuthState> emit) async {
+    final currentState = state;
+    if (currentState is AuthAuthenticated) {
+      try {
+        // Récupérer les informations mises à jour de l'utilisateur
+        final userWithToken = await authRepository.getUserDetails(currentState.token);
+        final updatedUser = User.fromJson(userWithToken['user']);
+
+        // Émettre un nouvel état avec l'utilisateur mis à jour
+        emit(AuthAuthenticated(user: updatedUser, token: currentState.token));
+      } catch (e) {
+        print(e);
+        emit(AuthError(message: e.toString()));
+      }
     }
   }
 }

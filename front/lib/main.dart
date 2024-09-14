@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -48,7 +49,7 @@ class MyApp extends StatelessWidget {
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
         routes: {
-          '/': (context) => AuthWrapper(),
+          '/': (context) => const AuthWrapper(),
           '/login': (context) => LoginPage(),
           '/register': (context) => const RegisterPage(),
           '/home': (context) => const HomePage(),
@@ -65,15 +66,21 @@ class AuthWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authBloc = context.read<AuthBloc>();
-    print("AuthBloc initialisé avec succès : $authBloc");
+    if (kDebugMode) {
+      print("AuthBloc initialisé avec succès : $authBloc");
+    }
 
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         if (state is AuthAuthenticated) {
-          print("L'utilisateur est authentifié.");
+          if (kDebugMode) {
+            print("L'utilisateur est authentifié.");
+          }
           return const HomePage();
         } else {
-          print("L'utilisateur n'est pas authentifié.");
+          if (kDebugMode) {
+            print("L'utilisateur n'est pas authentifié.");
+          }
           return LoginPage();
         }
       },

@@ -68,7 +68,7 @@ class ChildDetailsPageState extends State<ChildDetailsPage> {
     }
 
     try {
-      final parentToken = "Bearer YOUR_PARENT_TOKEN"; // Récupère le token du parent ici
+      const parentToken = '';
       final success = await childRepository.assignTokensToChild(
         childId: widget.child.id.toString(),
         tokens: tokens,
@@ -79,7 +79,7 @@ class ChildDetailsPageState extends State<ChildDetailsPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Jetons attribués avec succès')),
         );
-        Navigator.pop(context); // Retour à la page précédente
+        Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Erreur lors de l\'attribution des jetons')),

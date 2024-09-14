@@ -14,10 +14,10 @@ class BuyTokensPage extends StatefulWidget {
   const BuyTokensPage({super.key});
 
   @override
-  _BuyTokensPageState createState() => _BuyTokensPageState();
+  BuyTokensPageState createState() => BuyTokensPageState();
 }
 
-class _BuyTokensPageState extends State<BuyTokensPage> {
+class BuyTokensPageState extends State<BuyTokensPage> {
   int _selectedAmount = 1;
   bool _isLoading = false;
 

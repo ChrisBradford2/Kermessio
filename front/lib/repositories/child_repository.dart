@@ -61,7 +61,9 @@ class ChildRepository {
         final List<dynamic> childrenJson = json.decode(response.body);
         return childrenJson.map((json) => User.fromJson(json)).toList();
       } catch (e) {
-        print("Erreur lors du décodage du JSON : $e");
+        if (kDebugMode) {
+          print("Erreur lors du décodage du JSON : $e");
+        }
         throw Exception('Erreur lors du traitement des données');
       }
     } else if (response.statusCode == 401) {

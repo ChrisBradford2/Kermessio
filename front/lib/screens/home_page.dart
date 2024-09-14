@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -16,20 +17,28 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("HomePage build");
+    if (kDebugMode) {
+      print("HomePage build");
+    }
 
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, authState) {
         // Gérer l'état déjà Authenticated lors de la construction
         if (authState is AuthAuthenticated) {
-          print("Utilisateur déjà authentifié lors de la construction, token : ${authState.token}");
+          if (kDebugMode) {
+            print("Utilisateur déjà authentifié lors de la construction, token : ${authState.token}");
+          }
           if (authState.token.isNotEmpty) {
             final childBloc = context.read<ChildBloc>();
-            print("ChildBloc récupéré avec succès : $childBloc");
-            print("Déclenchement de LoadChildren avec le token : ${authState.token}");
+            if (kDebugMode) {
+              print("ChildBloc récupéré avec succès : $childBloc");
+              print("Déclenchement de LoadChildren avec le token : ${authState.token}");
+            }
             childBloc.add(LoadChildren(parentToken: authState.token));
           } else {
-            print("Le token est nul ou vide !");
+            if (kDebugMode) {
+              print("Le token est nul ou vide !");
+            }
           }
         }
 
@@ -37,17 +46,25 @@ class HomePage extends StatelessWidget {
           listener: (context, authState) {
             // Gérer les changements d'état Authenticated via listener
             if (authState is AuthAuthenticated) {
-              print("Utilisateur authentifié via listener, token : ${authState.token}");
+              if (kDebugMode) {
+                print("Utilisateur authentifié via listener, token : ${authState.token}");
+              }
               if (authState.token.isNotEmpty) {
                 final childBloc = context.read<ChildBloc>();
-                print("ChildBloc récupéré avec succès via listener : $childBloc");
-                print("Déclenchement de LoadChildren avec le token via listener : ${authState.token}");
+                if (kDebugMode) {
+                  print("ChildBloc récupéré avec succès via listener : $childBloc");
+                  print("Déclenchement de LoadChildren avec le token via listener : ${authState.token}");
+                }
                 childBloc.add(LoadChildren(parentToken: authState.token));
               } else {
-                print("Le token est nul ou vide !");
+                if (kDebugMode) {
+                  print("Le token est nul ou vide !");
+                }
               }
             } else {
-              print("Utilisateur non authentifié");
+              if (kDebugMode) {
+                print("Utilisateur non authentifié");
+              }
             }
           },
           child: Scaffold(
@@ -131,10 +148,14 @@ class HomePage extends StatelessWidget {
                             );
                           }
                         } else if (state is ChildError) {
-                          print("Erreur dans ChildBloc : ${state.message}");
+                          if (kDebugMode) {
+                            print("Erreur dans ChildBloc : ${state.message}");
+                          }
                           return Center(child: Text("Erreur: ${state.message}"));
                         } else {
-                          print("État inconnu: $state");
+                          if (kDebugMode) {
+                            print("État inconnu: $state");
+                          }
                           return const Center(child: Text("Erreur de chargement."));
                         }
                       },

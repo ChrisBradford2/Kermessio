@@ -53,7 +53,9 @@ class ChildBloc extends Bloc<ChildEvent, ChildState> {
   }
 
   void _onLoadChildren(LoadChildren event, Emitter<ChildState> emit) async {
-    print("Début du chargement des enfants avec le token : ${event.parentToken}");
+    if (kDebugMode) {
+      print("Début du chargement des enfants avec le token : ${event.parentToken}");
+    }
     emit(ChildLoading());
 
     try {
@@ -62,10 +64,14 @@ class ChildBloc extends Bloc<ChildEvent, ChildState> {
       }
 
       final children = await childRepository.getChildren(event.parentToken);
-      print("Enfants récupérés : ${children.length}");
+      if (kDebugMode) {
+        print("Enfants récupérés : ${children.length}");
+      }
       emit(ChildLoaded(children: children));
     } catch (e) {
-      print("Erreur lors de la récupération des enfants : $e");
+      if (kDebugMode) {
+        print("Erreur lors de la récupération des enfants : $e");
+      }
       emit(ChildError(message: e.toString()));
     }
   }

@@ -41,16 +41,27 @@ definitions:
       error:
         type: string
     type: object
-  models.PublicUser:
+  models.PublicChild:
     properties:
-      email:
+      createdAt:
         type: string
-      first_name:
+      deletedAt:
         type: string
       id:
         type: integer
-      last_name:
+      tokens:
+        type: integer
+      updatedAt:
         type: string
+      username:
+        type: string
+    type: object
+  models.TokensRequest:
+    properties:
+      tokens:
+        type: integer
+    required:
+    - tokens
     type: object
   models.UserLogin:
     properties:
@@ -67,6 +78,7 @@ definitions:
   models.UserRegister:
     properties:
       email:
+        example: john.doe@example.com
         type: string
       first_name:
         example: John
@@ -136,7 +148,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.PublicUser'
+              $ref: '#/definitions/models.PublicChild'
             type: array
         "401":
           description: Unauthorized
@@ -180,6 +192,160 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Create a child account
+      tags:
+      - children
+  /user/child/{childId}/tokens:
+    post:
+      consumes:
+      - application/json
+      description: Assign tokens to a child linked to the current authenticated parent
+      parameters:
+      - description: Child ID
+        in: path
+        name: childId
+        required: true
+        type: string
+      - description: Token Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.TokensRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ChildRequestResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Assign tokens to a child linked to the current authenticated parent
+      tags:
+      - children
+  /user/child/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a child linked to the current authenticated parent
+      parameters:
+      - description: Child ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Child deleted successfully
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a child linked to the current authenticated parent
+      tags:
+      - children
+    get:
+      consumes:
+      - application/json
+      description: Get a child linked to the current authenticated parent
+      parameters:
+      - description: Child ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PublicChild'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a child linked to the current authenticated parent
+      tags:
+      - children
+    put:
+      consumes:
+      - application/json
+      description: Update a child linked to the current authenticated parent
+      parameters:
+      - description: Child ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Child Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ChildRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PublicChild'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a child linked to the current authenticated parent
       tags:
       - children
   /user/login:

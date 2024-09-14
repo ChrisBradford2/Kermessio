@@ -232,7 +232,7 @@ func UpdateChild(c *gin.Context) {
 // @Produce json
 // @Param id path string true "Child ID"
 // @Security ApiKeyAuth
-// @Success 200 {object} models.SuccessResponse
+// @Success 200 {string} string "Child deleted successfully"
 // @Failure 401 {object} models.ErrorResponse
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
@@ -277,9 +277,9 @@ func DeleteChild(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param childId path string true "Child ID"
-// @Param request body models.AssignTokensRequest true "Assign Tokens Request"
+// @Param request body models.TokensRequest true "Token Request"
 // @Security ApiKeyAuth
-// @Success 200 {object} models.SuccessResponse
+// @Success 200 {object} models.ChildRequestResponse
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 401 {object} models.ErrorResponse
 // @Failure 404 {object} models.ErrorResponse
@@ -300,12 +300,14 @@ func AssignTokensToChild(c *gin.Context) {
 		return
 	}
 
+	// Fetch the child
 	var child models.User
 	if err := database.DB.Where("id = ? AND parent_id = ?", childId, parentUser.ID).First(&child).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Child not found"})
 		return
 	}
 
+	// Parse the request to get the tokens to assign
 	var request struct {
 		Tokens int `json:"tokens" binding:"required"`
 	}
@@ -315,12 +317,26 @@ func AssignTokensToChild(c *gin.Context) {
 		return
 	}
 
+	// Check if the parent has enough tokens to assign
+	if parentUser.Tokens < int64(request.Tokens) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Insufficient tokens"})
+		return
+	}
+
+	// Decrement the parent's tokens and increment the child's tokens
+	parentUser.Tokens -= int64(request.Tokens)
 	child.Tokens += int64(request.Tokens)
 
-	if err := database.DB.Save(&child).Error; err != nil {
+	// Save both the parent and the child
+	if err := database.DB.Save(&parentUser).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update parent tokens"})
+		return
+	}
+
+	if err := database.DB.Model(&child).Update("tokens", child.Tokens).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update child tokens"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Tokens successfully assigned"})
+	c.JSON(http.StatusOK, gin.H{"message": "Tokens assigned successfully", "child": child.Username, "tokens": child.Tokens})
 }

@@ -55,3 +55,7 @@ type PublicChild struct {
 	Username string `json:"username"`
 	Tokens   int    `json:"tokens"`
 }
+
+type TokensRequest struct {
+	Tokens int `json:"tokens" binding:"required"`
+}

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../blocs/auth_bloc.dart';
+import '../blocs/auth_event.dart';
+import '../blocs/auth_state.dart';
 import '../models/user_model.dart';
 import '../repositories/child_repository.dart';
-
 class ChildDetailsPage extends StatefulWidget {
   final User child;
 
@@ -40,9 +43,19 @@ class ChildDetailsPageState extends State<ChildDetailsPage> {
             const SizedBox(height: 20.0),
             _isLoading
                 ? const CircularProgressIndicator()
-                : ElevatedButton(
-              onPressed: _assignTokens,
-              child: const Text("Attribuer"),
+                : BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) {
+                if (state is AuthAuthenticated) {
+                  return ElevatedButton(
+                    onPressed: () => _assignTokens(state.token),
+                    child: const Text("Attribuer"),
+                  );
+                } else if (state is AuthUnauthenticated) {
+                  return const Text('Vous devez être connecté pour attribuer des tokens');
+                } else {
+                  return const CircularProgressIndicator();
+                }
+              },
             ),
           ],
         ),
@@ -50,7 +63,7 @@ class ChildDetailsPageState extends State<ChildDetailsPage> {
     );
   }
 
-  void _assignTokens() async {
+  void _assignTokens(String token) async {
     setState(() {
       _isLoading = true;
     });
@@ -68,18 +81,21 @@ class ChildDetailsPageState extends State<ChildDetailsPage> {
     }
 
     try {
-      const parentToken = '';
       final success = await childRepository.assignTokensToChild(
         childId: widget.child.id.toString(),
         tokens: tokens,
-        token: parentToken,
+        token: token,
       );
 
       if (success) {
+        context.read<AuthBloc>().add(AuthRefreshRequested());
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Jetons attribués avec succès')),
         );
-        Navigator.pop(context);
+        if (Navigator.canPop(context) && mounted) {
+          Navigator.pop(context);
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Erreur lors de l\'attribution des jetons')),

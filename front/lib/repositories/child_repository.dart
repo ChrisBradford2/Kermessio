@@ -102,6 +102,11 @@ class ChildRepository {
     if (response.statusCode == 200) {
       return true;
     } else if (response.statusCode == 401) {
+      if (kDebugMode) {
+        print("Authorization Token: Bearer $token");
+        print("Error: ${response.statusCode} - ${response.body}");
+        print(response.headers);
+      }
       throw Exception('Non autorisé');
     } else if (response.statusCode == 403) {
       throw Exception('Interdit');

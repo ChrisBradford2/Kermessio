@@ -83,8 +83,8 @@ class HomePage extends StatelessWidget {
                 builder: (context, state) {
                   if (state is AuthAuthenticated) {
                     final tokenText = state.user.tokens > 0
-                        ? '${state.user.tokens} tokens'
-                        : '0 token';
+                        ? '${state.user.tokens}'
+                        : '0';
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Center(
@@ -92,7 +92,7 @@ class HomePage extends StatelessWidget {
                           tokenText,
                           style: const TextStyle(
                             fontSize: 16,
-                            color: Colors.white,
+                            color: Colors.black,
                           ),
                         ),
                       ),
@@ -117,6 +117,43 @@ class HomePage extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 30.0),
+                  const Text(
+                    "Votre solde de jetons est de :",
+                    style: TextStyle(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10.0),
+                  BlocBuilder<AuthBloc, AuthState>(
+                    builder: (context, state) {
+                      if (state is AuthAuthenticated) {
+                        return Text(
+                          "${state.user.tokens} jetons",
+                          style: const TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        );
+                      } else {
+                        return const Text(
+                          "0 jeton",
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                  const Text(
+                    "Liste des enfants",
+                    style: TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 20.0),
                   Expanded(
                     child: BlocBuilder<ChildBloc, ChildState>(
                       builder: (context, state) {

@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../models/user_model.dart';
+import '../../repositories/activity_repository.dart';
+import '../add_activity_page.dart';
+import '../../blocs/auth_bloc.dart';
+import '../../blocs/auth_state.dart';
 
 class BoothHolderView extends StatelessWidget {
   final User user;
@@ -19,11 +24,33 @@ class BoothHolderView extends StatelessWidget {
               style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: () {
-                // Naviguer vers la page pour ajouter des activités
+            BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, authState) {
+                if (authState is AuthAuthenticated) {
+                  final activityRepository = ActivityRepository(
+                    baseUrl: 'http://10.0.2.2:8080',
+                    token: authState.token,
+                  );
+
+                  return ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AddActivityPage(
+                            activityRepository: activityRepository,
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text("Ajouter une activité"),
+                  );
+                } else {
+                  return const Center(
+                    child: Text('Vous devez être authentifié pour ajouter une activité'),
+                  );
+                }
               },
-              child: const Text("Ajouter une activité"),
             ),
             const SizedBox(height: 20),
             ElevatedButton(

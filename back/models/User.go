@@ -2,15 +2,16 @@ package models
 
 type User struct {
 	Base
-	Username  string `gorm:"unique" json:"username" binding:"required" example:"jdoe"`
-	LastName  string `json:"last_name" binding:"required" example:"Doe"`
-	FirstName string `json:"first_name" binding:"required" example:"John"`
-	Email     string `gorm:"unique;default:null" json:"email" binding:"required" example:"john.doe@example.com"`
-	Password  string `gorm:"not null" json:"password" binding:"required" example:"password"`
-	Role      string `json:"role" gorm:"not null" binding:"required" example:"user"`
-	ParentID  *uint  `gorm:"default:null"`        // If the user is a child, this will reference their parent's ID
-	Parent    *User  `gorm:"foreignKey:ParentID"` // Relationship to parent
-	Tokens    int64  `json:"tokens" gorm:"default:0"`
+	Username   string     `gorm:"unique" json:"username" binding:"required" example:"jdoe"`
+	LastName   string     `json:"last_name" binding:"required" example:"Doe"`
+	FirstName  string     `json:"first_name" binding:"required" example:"John"`
+	Email      string     `gorm:"unique;default:null" json:"email" binding:"required" example:"john.doe@example.com"`
+	Password   string     `gorm:"not null" json:"password" binding:"required" example:"password"`
+	Role       string     `json:"role" gorm:"not null" binding:"required" example:"user"`
+	ParentID   *uint      `gorm:"default:null"`        // If the user is a child, this will reference their parent's ID
+	Parent     *User      `gorm:"foreignKey:ParentID"` // Relationship to parent
+	Tokens     int64      `json:"tokens" gorm:"default:0"`
+	Activities []Activity `json:"activities" gorm:"foreignKey:BoothHolderID"`
 }
 
 type UserRegister struct {

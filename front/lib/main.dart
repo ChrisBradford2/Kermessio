@@ -9,7 +9,7 @@ import 'repositories/auth_repository.dart';
 import 'blocs/auth_bloc.dart';
 import 'screens/login_page.dart';
 import 'screens/register_page.dart';
-import 'screens/home_page.dart';
+import 'screens/home/home_page.dart';
 import 'blocs/auth_state.dart';
 
 void main() async {

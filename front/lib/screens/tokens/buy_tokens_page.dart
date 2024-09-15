@@ -6,9 +6,9 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 
-import '../blocs/auth_bloc.dart';
-import '../blocs/auth_event.dart';
-import '../blocs/auth_state.dart';
+import '../../blocs/auth_bloc.dart';
+import '../../blocs/auth_event.dart';
+import '../../blocs/auth_state.dart';
 
 class BuyTokensPage extends StatefulWidget {
   const BuyTokensPage({super.key});

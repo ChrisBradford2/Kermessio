@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/user_model.dart';
+import '../../models/user_model.dart';
 
 class BoothHolderView extends StatelessWidget {
   final User user;
@@ -30,7 +30,7 @@ class BoothHolderView extends StatelessWidget {
               onPressed: () {
                 // Naviguer vers la page pour définir les prix des produits
               },
-              child: const Text("Définir les prix des produits"),
+              child: const Text("Ajouter un consommable"),
             ),
           ],
         ),

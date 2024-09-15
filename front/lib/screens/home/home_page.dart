@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../blocs/auth_bloc.dart';
-import '../blocs/auth_state.dart';
+import '../../blocs/auth_bloc.dart';
+import '../../blocs/auth_state.dart';
 import 'parent_view.dart';
 import 'booth_holder_view.dart';
 

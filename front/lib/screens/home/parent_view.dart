@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../blocs/auth_bloc.dart';
-import '../blocs/auth_event.dart';
-import '../blocs/auth_state.dart';
-import '../blocs/child_bloc.dart';
-import '../blocs/child_event.dart';
-import '../blocs/child_state.dart';
-import 'create_child_page.dart';
-import 'buy_tokens_page.dart';
-import 'child_details_page.dart';
-import '../models/user_model.dart';
+import '../../blocs/auth_bloc.dart';
+import '../../blocs/auth_event.dart';
+import '../../blocs/auth_state.dart';
+import '../../blocs/child_bloc.dart';
+import '../../blocs/child_event.dart';
+import '../../blocs/child_state.dart';
+import '../child/create_child_page.dart';
+import '../tokens/buy_tokens_page.dart';
+import '../child/child_details_page.dart';
+import '../../models/user_model.dart';
 
 class ParentView extends StatelessWidget {
   final User user;

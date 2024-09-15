@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../blocs/auth_bloc.dart';
-import '../blocs/auth_event.dart';
-import '../blocs/auth_state.dart';
-import '../models/user_model.dart';
-import '../repositories/child_repository.dart';
+import '../../blocs/auth_bloc.dart';
+import '../../blocs/auth_event.dart';
+import '../../blocs/auth_state.dart';
+import '../../models/user_model.dart';
+import '../../repositories/child_repository.dart';
 class ChildDetailsPage extends StatefulWidget {
   final User child;
 

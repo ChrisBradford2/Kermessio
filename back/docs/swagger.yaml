@@ -1,25 +1,84 @@
 definitions:
+  models.ChildRequest:
+    properties:
+      password:
+        example: password
+        minLength: 6
+        type: string
+      username:
+        example: jdoe
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  models.ChildRequestResponse:
+    properties:
+      child:
+        type: string
+      message:
+        type: string
+    type: object
+  models.CreatePaymentIntentRequest:
+    properties:
+      amount:
+        example: 1000
+        type: integer
+      currency:
+        example: eur
+        type: string
+    required:
+    - amount
+    - currency
+    type: object
+  models.CreatePaymentIntentResponse:
+    properties:
+      clientSecret:
+        type: string
+    type: object
   models.ErrorResponse:
     properties:
       error:
         type: string
     type: object
+  models.PublicChild:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: integer
+      tokens:
+        type: integer
+      updatedAt:
+        type: string
+      username:
+        type: string
+    type: object
+  models.TokensRequest:
+    properties:
+      tokens:
+        type: integer
+    required:
+    - tokens
+    type: object
   models.UserLogin:
     properties:
-      email:
-        example: john.doe@exmple.com
-        type: string
       password:
         example: password
         type: string
+      username:
+        example: jdoe
+        type: string
     required:
-    - email
     - password
+    - username
     type: object
   models.UserRegister:
     properties:
       email:
-        example: john.doe@exmple.com
+        example: john.doe@example.com
         type: string
       first_name:
         example: John
@@ -30,14 +89,17 @@ definitions:
       password:
         example: password
         type: string
+      role:
+        example: parent
+        type: string
       username:
         example: jdoe
         type: string
     required:
-    - email
     - first_name
     - last_name
     - password
+    - role
     - username
     type: object
 info:
@@ -50,6 +112,242 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://swagger.io/terms/
 paths:
+  /create-payment-intent:
+    post:
+      consumes:
+      - application/json
+      description: Create a payment intent for purchasing tokens
+      parameters:
+      - description: Payment Intent Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreatePaymentIntentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CreatePaymentIntentResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a payment intent
+      tags:
+      - PaymentIntent
+  /user/child:
+    get:
+      consumes:
+      - application/json
+      description: Get all children linked to the current authenticated parent
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.PublicChild'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all children linked to the current authenticated parent
+      tags:
+      - children
+    post:
+      consumes:
+      - application/json
+      description: Create a child account linked to the current authenticated parent
+      parameters:
+      - description: Child Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ChildRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ChildRequestResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a child account
+      tags:
+      - children
+  /user/child/{childId}/tokens:
+    post:
+      consumes:
+      - application/json
+      description: Assign tokens to a child linked to the current authenticated parent
+      parameters:
+      - description: Child ID
+        in: path
+        name: childId
+        required: true
+        type: string
+      - description: Token Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.TokensRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ChildRequestResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Assign tokens to a child linked to the current authenticated parent
+      tags:
+      - children
+  /user/child/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a child linked to the current authenticated parent
+      parameters:
+      - description: Child ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Child deleted successfully
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a child linked to the current authenticated parent
+      tags:
+      - children
+    get:
+      consumes:
+      - application/json
+      description: Get a child linked to the current authenticated parent
+      parameters:
+      - description: Child ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PublicChild'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a child linked to the current authenticated parent
+      tags:
+      - children
+    put:
+      consumes:
+      - application/json
+      description: Update a child linked to the current authenticated parent
+      parameters:
+      - description: Child ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Child Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ChildRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PublicChild'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a child linked to the current authenticated parent
+      tags:
+      - children
   /user/login:
     post:
       consumes:

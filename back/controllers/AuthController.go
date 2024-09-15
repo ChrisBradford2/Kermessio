@@ -69,7 +69,17 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": tokenString})
+	// Return both token and user info in the response
+	c.JSON(http.StatusOK, gin.H{
+		"token": tokenString,
+		"user": gin.H{
+			"id":       user.ID,
+			"username": user.Username,
+			"email":    user.Email,
+			"role":     user.Role,
+			"tokens":   user.Tokens,
+		},
+	})
 }
 
 // Register godoc
@@ -86,7 +96,7 @@ func Login(c *gin.Context) {
 func Register(c *gin.Context) {
 	var input struct {
 		Username string `json:"username" binding:"required"`
-		Email    string `json:"email" binding:"required,email"`
+		Email    string `json:"email" binding:"email"`
 		Password string `json:"password" binding:"required,min=6"`
 		Role     string `json:"role" binding:"required"`
 	}
@@ -94,6 +104,27 @@ func Register(c *gin.Context) {
 	// Bind JSON request body to the input struct
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validate role
+	validRoles := []string{config.RoleParent, config.RoleChild, config.RoleBoothHolder, config.RoleOrganizer}
+	isValidRole := false
+	for _, role := range validRoles {
+		if input.Role == role {
+			isValidRole = true
+			break
+		}
+	}
+
+	if !isValidRole {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role provided"})
+		return
+	}
+
+	// For roles other than "child", ensure that an email is provided and valid
+	if input.Role != config.RoleChild && input.Email == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Email is required for non-child roles"})
 		return
 	}
 

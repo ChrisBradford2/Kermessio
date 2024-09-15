@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../models/user_model.dart';
 import '../../repositories/activity_repository.dart';
+import '../../repositories/stock_repository.dart';
 import '../add_activity_page.dart';
 import '../../blocs/auth_bloc.dart';
 import '../../blocs/auth_state.dart';
+import '../add_stock_page.dart';
 
 class BoothHolderView extends StatelessWidget {
   final User user;
@@ -31,33 +33,48 @@ class BoothHolderView extends StatelessWidget {
                     baseUrl: 'http://10.0.2.2:8080',
                     token: authState.token,
                   );
+                  final stockRepository = StockRepository(
+                    baseUrl: 'http://10.0.2.2:8080',
+                    token: authState.token,
+                  );
 
-                  return ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AddActivityPage(
-                            activityRepository: activityRepository,
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Text("Ajouter une activité"),
+                  return Column(
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AddActivityPage(
+                                activityRepository: activityRepository,
+                              ),
+                            ),
+                          );
+                        },
+                        child: const Text("Ajouter une activité"),
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AddStockPage(
+                                stockRepository: stockRepository,
+                              ),
+                            ),
+                          );
+                        },
+                        child: const Text("Ajouter un consommable"),
+                      ),
+                    ],
                   );
                 } else {
                   return const Center(
-                    child: Text('Vous devez être authentifié pour ajouter une activité'),
+                    child: Text('Vous devez être authentifié pour ajouter une activité ou un consommable'),
                   );
                 }
               },
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                // Naviguer vers la page pour définir les prix des produits
-              },
-              child: const Text("Ajouter un consommable"),
             ),
           ],
         ),

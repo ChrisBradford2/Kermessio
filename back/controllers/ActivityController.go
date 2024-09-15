@@ -62,3 +62,37 @@ func CreateActivity(c *gin.Context) {
 		"activity": newActivity,
 	})
 }
+
+// GetActivities godoc
+// @Summary Get all activities
+// @Description Get all activities for the current booth holder
+// @ID get-activities
+// @Produce  json
+// @Success 200 {object} JSONResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /activities [get]
+func GetActivities(c *gin.Context) {
+	boothHolder, exists := c.Get("currentUser")
+	if !exists || boothHolder == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non autorisé"})
+		return
+	}
+
+	user, ok := boothHolder.(models.User)
+	if !ok || user.Role != "booth_holder" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Seuls les teneurs de stand peuvent voir les activités"})
+		return
+	}
+
+	// Get all activities for the current booth holder
+	var activities []models.Activity
+	if err := database.DB.Where("booth_holder_id = ?", user.ID).Find(&activities).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des activités"})
+		return
+	}
+
+	// Return the activities
+	c.JSON(http.StatusOK, gin.H{
+		"activities": activities,
+	})
+}

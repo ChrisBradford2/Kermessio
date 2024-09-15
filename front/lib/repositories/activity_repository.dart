@@ -9,7 +9,7 @@ class ActivityRepository {
 
   ActivityRepository({required this.baseUrl, required this.token});
 
-  // Créer une nouvelle activité
+  // Create an activity
   Future<Activity?> createActivity(Activity activity) async {
     final url = Uri.parse('$baseUrl/activities');
     final response = await http.post(
@@ -44,6 +44,9 @@ class ActivityRepository {
       List<dynamic> data = jsonDecode(response.body);
       return data.map((activityJson) => Activity.fromJson(activityJson)).toList();
     } else {
+      if (kDebugMode) {
+        print("Error: ${response.statusCode} - ${response.body}");
+      }
       throw Exception('Erreur lors du chargement des activités');
     }
   }

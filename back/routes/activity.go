@@ -11,5 +11,6 @@ func ActivityRoutes(r *gin.Engine) {
 	protected.Use(middleware.AuthMiddleware())
 	{
 		protected.POST("", controllers.CreateActivity)
+		protected.GET("", controllers.GetActivities)
 	}
 }

@@ -44,6 +44,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _onRegisterRequested(AuthRegisterRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
+      final message = await authRepository.register(event.username, event.email, event.password, event.role);
+      if (message.isEmpty) {
+        throw Exception("Erreur lors de l'inscription");
+      }
       emit(AuthUnauthenticated());
     } catch (e) {
       emit(AuthError(message: e.toString()));

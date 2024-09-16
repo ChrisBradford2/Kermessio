@@ -3,7 +3,9 @@ class Stock {
   final String itemName;
   final int quantity;
   final int price;
-  final String type; // Boisson ou Nourriture
+  final String type;
+  final int boothHolderId;
+  final String? boothHolderUsername;
 
   Stock({
     required this.id,
@@ -11,6 +13,8 @@ class Stock {
     required this.quantity,
     required this.price,
     required this.type,
+    required this.boothHolderId,
+    this.boothHolderUsername,
   });
 
   // Convertir un JSON en instance de Stock
@@ -21,6 +25,8 @@ class Stock {
       quantity: json['quantity'],
       price: json['price'],
       type: json['type'],
+      boothHolderId: json['user_id'],
+      boothHolderUsername: json['booth_holder_username'],
     );
   }
 
@@ -32,6 +38,7 @@ class Stock {
       'quantity': quantity,
       'price': price,
       'type': type,
+      'user_id': boothHolderId,
     };
   }
 }

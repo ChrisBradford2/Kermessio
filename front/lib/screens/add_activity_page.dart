@@ -143,14 +143,14 @@ class AddActivityPageState extends State<AddActivityPage> {
       _isLoading = true;
     });
 
-    // Créer une instance d'Activity à partir des données du formulaire
     final activity = Activity(
-      id: 0, // L'ID sera généré par l'API
+      id: 0,
       name: name,
       type: type,
       emoji: emoji,
       price: price,
       points: points,
+      boothHolderId: 0,
     );
 
     try {

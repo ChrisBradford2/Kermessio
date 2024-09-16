@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:front/repositories/child_repository.dart';
 import 'blocs/child_bloc.dart';
+import 'config/app_config.dart';
 import 'repositories/auth_repository.dart';
 import 'blocs/auth_bloc.dart';
 import 'screens/login_page.dart';
@@ -20,6 +21,8 @@ void main() async {
   // Initialize Stripe
   Stripe.publishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY']!;
   Stripe.instance.applySettings();
+
+  await AppConfig().init();
 
   runApp(MyApp());
 }

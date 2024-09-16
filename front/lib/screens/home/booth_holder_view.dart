@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../config/app_config.dart';
 import '../../models/activity_model.dart';
 import '../../models/stock_model.dart';
 import '../../models/user_model.dart';
@@ -34,11 +35,11 @@ class _BoothHolderViewState extends State<BoothHolderView> {
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
       final activityRepository = ActivityRepository(
-        baseUrl: 'http://10.0.2.2:8080',
+        baseUrl: AppConfig().baseUrl,
         token: authState.token,
       );
       final stockRepository = StockRepository(
-        baseUrl: 'http://10.0.2.2:8080',
+        baseUrl: AppConfig().baseUrl,
         token: authState.token,
       );
 
@@ -88,11 +89,11 @@ class _BoothHolderViewState extends State<BoothHolderView> {
                       builder: (context, authState) {
                         if (authState is AuthAuthenticated) {
                           final activityRepository = ActivityRepository(
-                            baseUrl: 'http://10.0.2.2:8080',
+                            baseUrl: AppConfig().baseUrl,
                             token: authState.token,
                           );
                           final stockRepository = StockRepository(
-                            baseUrl: 'http://10.0.2.2:8080',
+                            baseUrl: AppConfig().baseUrl,
                             token: authState.token,
                           );
 

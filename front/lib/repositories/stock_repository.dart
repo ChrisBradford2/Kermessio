@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import '../models/stock_model.dart';
 
 class StockRepository {
-  final String baseUrl;
+  final String? baseUrl;
   final String token;
 
   StockRepository({required this.baseUrl, required this.token});
@@ -34,7 +34,9 @@ class StockRepository {
   // Fetch all stocks
   Future<List<Stock>> fetchStocks() async {
     final url = Uri.parse('$baseUrl/stocks');
-    print('Fetching stocks from $url');
+    if (kDebugMode) {
+      print('Fetching stocks from $url');
+    }
     final response = await http.get(
       url,
       headers: {
@@ -44,16 +46,68 @@ class StockRepository {
 
     if (response.statusCode == 200) {
       final responseBody = jsonDecode(response.body);
-
-      if (responseBody.containsKey('data')) {
-        List<dynamic> data = responseBody['data'];
-        return data.map((stockJson) => Stock.fromJson(stockJson)).toList();
-      } else {
-        throw Exception('Réponse inattendue : clé "data" manquante');
-      }
+      List<dynamic> data = responseBody['data'];
+      return data.map((stockJson) => Stock.fromJson(stockJson)).toList();
     } else {
-      print("Error: ${response.statusCode} - ${response.body}");
+      if (kDebugMode) {
+        print("Error: ${response.statusCode} - ${response.body}");
+      }
       throw Exception('Erreur lors du chargement des stocks');
+    }
+  }
+
+  // Fetch all stocks with optional pagination
+  Future<List<Stock>> fetchAllStocks({int page = 1, int limit = 10}) async {
+    final url = Uri.parse('$baseUrl/stocks/all?page=$page&limit=$limit');
+    if (kDebugMode) {
+      print('Fetching stocks from $url');
+    }
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final responseBody = jsonDecode(response.body);
+      List<dynamic> data = responseBody['data'];
+      print(data);
+      return data.map((stockJson) => Stock.fromJson(stockJson)).toList();
+    } else {
+      if (kDebugMode) {
+        print("Error: ${response.statusCode} - ${response.body}");
+      }
+      throw Exception('Erreur lors du chargement des stocks');
+    }
+  }
+
+  Future<bool> buyStock(int stockId, int boothHolderId) async {
+    final url = Uri.parse('$baseUrl/stocks/buy');
+    final body = jsonEncode({
+      'stock_id': stockId,
+      'booth_holder_id': boothHolderId,
+    });
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      if (kDebugMode) {
+        print("Achat réussi : ${response.body}");
+      }
+      return true;
+    } else {
+      if (kDebugMode) {
+        print("Erreur lors de l'achat : ${response.statusCode} - ${response.body}");
+      }
+      return false;
     }
   }
 }

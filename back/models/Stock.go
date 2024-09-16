@@ -16,3 +16,8 @@ type Stock struct {
 	Price    int       `json:"price" gorm:"not null" binding:"required" example:"price"`
 	UserID   uint      `json:"user_id" gorm:"not null" example:"1"`
 }
+
+type BuyStockRequest struct {
+	BoothHolderID uint `json:"booth_holder_id" binding:"required"`
+	StockID       uint `json:"stock_id" binding:"required"`
+}

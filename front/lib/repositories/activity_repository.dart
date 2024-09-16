@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import '../models/activity_model.dart';
 
 class ActivityRepository {
-  final String baseUrl;
+  final String? baseUrl;
   final String token;
 
   ActivityRepository({required this.baseUrl, required this.token});

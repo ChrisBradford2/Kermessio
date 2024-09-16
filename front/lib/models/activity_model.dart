@@ -2,9 +2,10 @@ class Activity {
   final int id;
   final String name;
   final String type;
-  final String? emoji;
+  final String? emoji; // Peut être null
   final int price;
   final int points;
+  final int boothHolderId;
 
   Activity({
     required this.id,
@@ -13,6 +14,7 @@ class Activity {
     this.emoji,
     required this.price,
     required this.points,
+    required this.boothHolderId,
   });
 
   factory Activity.fromJson(Map<String, dynamic> json) {
@@ -23,10 +25,10 @@ class Activity {
       emoji: json['emoji'],
       price: json['price'],
       points: json['points'],
+      boothHolderId: json['booth_holder_id'],
     );
   }
 
-  // Convertir une instance d'Activity en JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -35,6 +37,7 @@ class Activity {
       'emoji': emoji,
       'price': price,
       'points': points,
+      'booth_holder_id': boothHolderId,
     };
   }
 }

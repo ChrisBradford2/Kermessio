@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+import '../config/app_config.dart';
+
 class AuthRepository {
-  final String baseUrl = "http://10.0.2.2:8080";
+  final String? baseUrl = AppConfig().baseUrl;
 
   Future<Map<String, dynamic>> login(String username, String password) async {
     final response = await http.post(

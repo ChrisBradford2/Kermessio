@@ -144,11 +144,12 @@ class AddStockPageState extends State<AddStockPage> {
 
     try {
       final newStock = Stock(
-        id: 0, // l'ID sera généré par le backend
+        id: 0,
         itemName: itemName,
         quantity: quantity,
         price: price,
         type: type,
+        boothHolderId: 0,
       );
 
       final createdStock = await widget.stockRepository.createStock(newStock);

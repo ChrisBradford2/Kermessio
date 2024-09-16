@@ -6,6 +6,7 @@ import '../../models/stock_model.dart';
 import '../../models/user_model.dart';
 import '../../repositories/activity_repository.dart';
 import '../../repositories/stock_repository.dart';
+import '../activity_details_page.dart';
 import '../add_activity_page.dart';
 import '../../blocs/auth_bloc.dart';
 import '../../blocs/auth_state.dart';
@@ -169,6 +170,14 @@ class _BoothHolderViewState extends State<BoothHolderView> {
                 return ListTile(
                   title: Text(activity.name),
                   subtitle: Text('Prix : ${activity.price} jetons'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ActivityDetailsPage(activity: activity),
+                      ),
+                    );
+                  },
                 );
               },
             ),

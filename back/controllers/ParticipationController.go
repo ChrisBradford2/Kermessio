@@ -47,28 +47,60 @@ func CreateParticipation(c *gin.Context) {
 	}
 
 	// Déduire les jetons de l'utilisateur
-	if user.Tokens < int64(activity.Price) {
-		if err := database.DB.Save(&user).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Erreur lors de la mise à jour des jetons"})
-			return
-		}
-
-		// Créer une participation sans attribution de points
-		participation := models.Participation{
-			UserID:     req.UserID,
-			ActivityID: req.ActivityID,
-		}
-
-		if err := database.DB.Create(&participation).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Erreur lors de l'enregistrement de la participation"})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"message":       "Participation enregistrée avec succès",
-			"participation": participation,
-		})
+	user.Tokens -= int64(activity.Price)
+	if err := database.DB.Save(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Erreur lors de la mise à jour des jetons"})
+		return
 	}
+
+	// Créer une participation
+	participation := models.Participation{
+		UserID:     req.UserID,
+		ActivityID: req.ActivityID,
+		Points:     0, // Initialement, les points peuvent être à 0 jusqu'à ce que le vainqueur soit décidé
+		IsWinner:   false,
+	}
+
+	if err := database.DB.Create(&participation).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Erreur lors de l'enregistrement de la participation"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":       "Participation enregistrée avec succès",
+		"participation": participation,
+	})
+}
+
+// GetParticipationsByActivity godoc
+// @Summary Get participations for a specific activity
+// @Description Get all participations for a given activity
+// @ID get-participations-by-activity
+// @Produce  json
+// @Param activity_id path int true "Activity ID"
+// @Success 200 {object} models.JSONResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /activities/{activity_id}/participations [get]
+func GetParticipationsByActivity(c *gin.Context) {
+	activityID := c.Param("activity_id")
+
+	var activity models.Activity
+	if err := database.DB.First(&activity, activityID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Activité non trouvée"})
+		return
+	}
+
+	var participations []models.Participation
+	if err := database.DB.Where("activity_id = ?", activityID).Find(&participations).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des participations"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":        "Participations récupérées avec succès",
+		"participations": participations,
+	})
 }
 
 // UpdateParticipation godoc
@@ -82,9 +114,11 @@ func CreateParticipation(c *gin.Context) {
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
-// @Router /participations [put]
+// @Router /participations/{id} [put]
 func UpdateParticipation(c *gin.Context) {
+	participationID := c.Param("id")
 	var req models.UpdateParticipationRequest
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 		return
@@ -92,7 +126,7 @@ func UpdateParticipation(c *gin.Context) {
 
 	// Vérifier si la participation existe
 	var participation models.Participation
-	if err := database.DB.First(&participation, req.ParticipationID).Error; err != nil {
+	if err := database.DB.First(&participation, participationID).Error; err != nil {
 		c.JSON(http.StatusNotFound, models.ErrorResponse{Error: "Participation non trouvée"})
 		return
 	}
@@ -105,16 +139,16 @@ func UpdateParticipation(c *gin.Context) {
 	}
 
 	// Déterminer les points à attribuer
-	var points uint
+	points := activity.Points
 	if req.IsWinner {
-		points = activity.Points * 2 // Le gagnant reçoit le double des points
-	} else {
-		points = activity.Points // Les participants reçoivent les points de base
+		points *= 2 // Le gagnant reçoit le double des points
 	}
 
 	// Mettre à jour la participation avec les points et le statut de gagnant
 	participation.Points = points
 	participation.IsWinner = req.IsWinner
+
+	// Sauvegarder la mise à jour
 	if err := database.DB.Save(&participation).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Erreur lors de la mise à jour de la participation"})
 		return

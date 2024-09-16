@@ -12,5 +12,6 @@ func ActivityRoutes(r *gin.Engine) {
 	{
 		protected.POST("", controllers.CreateActivity)
 		protected.GET("", controllers.GetActivities)
+		protected.GET("/all", controllers.GetAllActivities)
 	}
 }

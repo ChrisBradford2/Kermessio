@@ -94,6 +94,7 @@ func main() {
 	routes.PaymentIntentRoutes(r)
 	routes.ActivityRoutes(r)
 	routes.StockRoutes(r)
+	routes.ParticipationRoutes(r)
 
 	// Swagger documentation
 	docs.SwaggerInfo.Title = "Kermessio API"

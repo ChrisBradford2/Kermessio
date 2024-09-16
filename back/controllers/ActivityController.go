@@ -97,3 +97,23 @@ func GetActivities(c *gin.Context) {
 		"activities": activities,
 	})
 }
+
+// GetAllActivities godoc
+// @Summary Get all activities
+// @Description Get all activities
+// @ID get-all-activities
+// @Produce  json
+// @Success 200 {object} models.JSONResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /activities/all [get]
+func GetAllActivities(c *gin.Context) {
+	var activities []models.Activity
+	if err := database.DB.Find(&activities).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des activités"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"activities": activities,
+	})
+}

@@ -7,7 +7,7 @@ class StockRepository {
   final String? baseUrl;
   final String token;
 
-  StockRepository({required this.baseUrl, required this.token});
+  StockRepository({this.baseUrl, required this.token});
 
   // Create a stock
   Future<Stock?> createStock(Stock stock) async {

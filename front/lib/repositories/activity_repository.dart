@@ -54,6 +54,29 @@ class ActivityRepository {
     }
   }
 
+  Future<List<Activity>> fetchAllActivities() async {
+    final url = Uri.parse('$baseUrl/activities/all');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+      List<dynamic> activitiesData = jsonResponse['activities'];
+
+      // On convertit chaque activité en instance de Activity
+      return activitiesData.map((activityJson) => Activity.fromJson(activityJson)).toList();
+    } else {
+      if (kDebugMode) {
+        print("Error: ${response.statusCode} - ${response.body}");
+      }
+      throw Exception('Erreur lors du chargement des activités');
+    }
+  }
+
   Future<Activity> getActivityById(int id) async {
     final url = Uri.parse('$baseUrl/activities/$id');
     final response = await http.get(

@@ -1,21 +1,22 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import '../config/app_config.dart';
 import '../models/user_model.dart';
 
 class ChildRepository {
-  final String apiUrl = 'http://10.0.2.2:8080';
+  final String? apiUrl = AppConfig().baseUrl;
 
   Future<bool> createChildAccount({
     required String username,
     required String password,
-    required String token,  // Parent's authentication token
+    required String token,
   }) async {
     final url = Uri.parse('$apiUrl/user/child');
     final response = await http.post(
       url,
       headers: {
-        'Authorization': 'Bearer $token', // Token to authenticate the parent
+        'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
       body: json.encode({
@@ -25,7 +26,7 @@ class ChildRepository {
     );
 
     if (response.statusCode == 200) {
-      return true;  // Account successfully created
+      return true;
     } else if (response.statusCode == 401) {
       throw Exception('Non autorisé');
     } else if (response.statusCode == 403) {
@@ -36,12 +37,11 @@ class ChildRepository {
       if (kDebugMode) {
         print("Token: $token");
         print("Error: ${response.statusCode} - ${response.body}");
-      } // Log the error details
-      return false;  // Failed to create the account
+      }
+      return false;
     }
   }
 
-  // Correction de la méthode getChildren pour qu'elle renvoie une liste de User
   Future<List<User>> getChildren(String token) async {
     final url = Uri.parse('$apiUrl/user/child');
     final response = await http.get(
@@ -81,11 +81,10 @@ class ChildRepository {
     }
   }
 
-  // Méthode pour attribuer des jetons à un enfant
   Future<bool> assignTokensToChild({
     required String childId,
     required int tokens,
-    required String token,  // Parent's authentication token
+    required String token,
   }) async {
     final url = Uri.parse('$apiUrl/user/child/$childId/tokens');
     final response = await http.post(

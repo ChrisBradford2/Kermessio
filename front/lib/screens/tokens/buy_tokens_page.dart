@@ -6,9 +6,10 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 
-import '../blocs/auth_bloc.dart';
-import '../blocs/auth_event.dart';
-import '../blocs/auth_state.dart';
+import '../../blocs/auth_bloc.dart';
+import '../../blocs/auth_event.dart';
+import '../../blocs/auth_state.dart';
+import '../../config/app_config.dart';
 
 class BuyTokensPage extends StatefulWidget {
   const BuyTokensPage({super.key});
@@ -83,9 +84,9 @@ class BuyTokensPageState extends State<BuyTokensPage> {
     final String token = authState.token;
 
     try {
-      // Appel à l'API backend pour créer le PaymentIntent
+      final baseUrl = AppConfig().baseUrl;
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8080/create-payment-intent'), // Adresse du backend
+        Uri.parse('$baseUrl/payments/create-payment-intent'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

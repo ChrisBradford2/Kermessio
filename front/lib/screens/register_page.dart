@@ -35,8 +35,12 @@ class RegisterPageState extends State<RegisterPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(state.message)),
                 );
-              } else if (state is AuthAuthenticated) {
-                Navigator.pushReplacementNamed(context, '/home');
+              } else if (state is AuthUnauthenticated) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Inscription réussie ! Veuillez vous connecter.')),
+                );
+
+                Navigator.pushReplacementNamed(context, '/login');
               }
             },
             builder: (context, state) {
@@ -91,7 +95,7 @@ class RegisterPageState extends State<RegisterPage> {
                         child: Text('Parent'),
                       ),
                       DropdownMenuItem(
-                        value: 'teneur_stand',
+                        value: 'booth_holder',
                         child: Text('Teneur de stand'),
                       ),
                     ],

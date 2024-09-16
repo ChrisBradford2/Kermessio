@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import '../config/app_config.dart';
+
 class StripeService {
   static Future<String> createPaymentIntent(int amount, String currency) async {
-    final url = Uri.parse('http://10.0.2.2:8080/create-payment-intent');
+    final String? baseUrl = AppConfig().baseUrl;
+    final url = Uri.parse('$baseUrl/create-payment-intent');
     final response = await http.post(
       url,
       headers: {

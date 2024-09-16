@@ -3,7 +3,7 @@ class User {
   final String username;
   final String email;
   final String role;
-  final int tokens;
+  int tokens;
 
   User({
     required this.id,

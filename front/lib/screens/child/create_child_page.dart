@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../repositories/child_repository.dart';
+import '../../repositories/child_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../blocs/auth_bloc.dart';
-import '../blocs/auth_state.dart';
+import '../../blocs/auth_bloc.dart';
+import '../../blocs/auth_state.dart';
 
 class CreateChildPage extends StatefulWidget {
   const CreateChildPage({super.key});

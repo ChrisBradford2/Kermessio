@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+import '../config/app_config.dart';
+
 class AuthRepository {
-  final String baseUrl = "http://10.0.2.2:8080";
+  final String? baseUrl = AppConfig().baseUrl;
 
   Future<Map<String, dynamic>> login(String username, String password) async {
     final response = await http.post(
@@ -36,23 +38,32 @@ class AuthRepository {
     }
   }
 
+  Future<String> register(String username, String email, String password, String role) async {
+    print('Tentative d\'inscription avec :');
+    print('Username: $username, Email: $email, Password: $password, Role: $role');
 
-  Future<String> register(String username, String email, String password) async {
     final response = await http.post(
       Uri.parse('$baseUrl/user/register'),
       headers: {
         'Content-Type': 'application/json',
       },
-      body: json.encode({'username': username, 'email': email, 'password': password}),
+      body: json.encode({
+        'username': username,
+        'email': email,
+        'password': password,
+        'role': role,
+      }),
     );
+
+    print('Réponse de l\'API: ${response.statusCode}');
+    print('Corps de la réponse: ${response.body}');
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      return data['message'];  // Return the success message
+      print('Inscription réussie avec message: ${data['message']}');
+      return data['message'];
     } else {
-      if (kDebugMode) {
-        print(response.body);
-      }
+      print('Erreur pendant l\'inscription: ${response.body}');
       throw Exception("Erreur d'inscription");
     }
   }

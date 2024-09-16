@@ -14,10 +14,10 @@ import (
 // @Accept  json
 // @Produce  json
 // @Param createStockRequest body CreateStockRequest true "Create Stock Request"
-// @Success 200 {object} JSONResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Success 200 {object} models.JSONResponse
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 401 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
 // @Security ApiKeyAuth
 // @Router /stocks [post]
 func CreateStock(c *gin.Context) {
@@ -44,12 +44,12 @@ func CreateStock(c *gin.Context) {
 		return
 	}
 
-	// Création du stock dans la base de données
 	newStock := models.Stock{
 		ItemName: req.ItemName,
 		Type:     req.Type,
 		Quantity: req.Quantity,
 		Price:    req.Price,
+		UserID:   user.ID,
 	}
 
 	if err := database.DB.Create(&newStock).Error; err != nil {
@@ -66,17 +66,38 @@ func CreateStock(c *gin.Context) {
 // @ID get-stocks
 // @Accept  json
 // @Produce  json
-// @Success 200 {object} JSONResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Success 200 {object} models.JSONResponse
+// @Failure 401 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
 // @Security ApiKeyAuth
 // @Router /stocks [get]
 func GetStocks(c *gin.Context) {
 	var stocks []models.Stock
-	if err := database.DB.Find(&stocks).Error; err != nil {
+
+	user, exists := c.Get("currentUser")
+	if !exists || user == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non autorisé"})
+		return
+	}
+
+	currentUser, ok := user.(models.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Impossible de récupérer les informations de l'utilisateur"})
+		return
+	}
+
+	if err := database.DB.Where("user_id = ?", currentUser.ID).Find(&stocks).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des stocks"})
 		return
 	}
 
-	c.JSON(http.StatusOK, stocks)
+	if len(stocks) == 0 {
+		c.JSON(http.StatusOK, gin.H{"message": "Aucun stock trouvé", "data": []models.Stock{}})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Stocks récupérés avec succès",
+		"data":    stocks,
+	})
 }

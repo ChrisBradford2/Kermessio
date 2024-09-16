@@ -15,9 +15,10 @@ class AddStockPageState extends State<AddStockPage> {
   final _itemNameController = TextEditingController();
   final _quantityController = TextEditingController();
   final _priceController = TextEditingController();
-  final _typeController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+
+  String? _selectedType;
 
   @override
   Widget build(BuildContext context) {
@@ -76,15 +77,30 @@ class AddStockPageState extends State<AddStockPage> {
                 },
               ),
               const SizedBox(height: 16.0),
-              TextFormField(
-                controller: _typeController,
+              DropdownButtonFormField<String>(
+                value: _selectedType,
                 decoration: const InputDecoration(
                   labelText: 'Type (Boisson ou Nourriture)',
                   border: OutlineInputBorder(),
                 ),
+                items: const [
+                  DropdownMenuItem(
+                    value: 'Boisson',
+                    child: Text('Boisson'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Nourriture',
+                    child: Text('Nourriture'),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _selectedType = value;
+                  });
+                },
                 validator: (value) {
-                  if (value == null || (value != 'Boisson' && value != 'Nourriture')) {
-                    return 'Veuillez entrer "Boisson" ou "Nourriture"';
+                  if (value == null) {
+                    return 'Veuillez sélectionner un type';
                   }
                   return null;
                 },
@@ -113,9 +129,9 @@ class AddStockPageState extends State<AddStockPage> {
     final itemName = _itemNameController.text;
     final quantity = int.tryParse(_quantityController.text);
     final price = int.tryParse(_priceController.text);
-    final type = _typeController.text;
+    final type = _selectedType;
 
-    if (quantity == null || price == null) {
+    if (quantity == null || price == null || type == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Veuillez entrer des valeurs valides')),
       );
@@ -128,7 +144,7 @@ class AddStockPageState extends State<AddStockPage> {
 
     try {
       final newStock = Stock(
-        id: 0, // L'ID sera généré par l'API
+        id: 0, // l'ID sera généré par le backend
         itemName: itemName,
         quantity: quantity,
         price: price,

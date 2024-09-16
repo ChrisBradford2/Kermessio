@@ -41,8 +41,11 @@ class ActivityRepository {
     );
 
     if (response.statusCode == 200) {
-      List<dynamic> data = jsonDecode(response.body);
-      return data.map((activityJson) => Activity.fromJson(activityJson)).toList();
+      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+      List<dynamic> activitiesData = jsonResponse['activities'];
+
+      // On convertit chaque activité en instance de Activity
+      return activitiesData.map((activityJson) => Activity.fromJson(activityJson)).toList();
     } else {
       if (kDebugMode) {
         print("Error: ${response.statusCode} - ${response.body}");

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/stock_model.dart';
 
@@ -23,7 +24,9 @@ class StockRepository {
     if (response.statusCode == 200) {
       return Stock.fromJson(jsonDecode(response.body));
     } else {
-      print("Error: ${response.statusCode} - ${response.body}");
+      if (kDebugMode) {
+        print("Error: ${response.statusCode} - ${response.body}");
+      }
       throw Exception('Erreur lors de la création du stock');
     }
   }
@@ -31,6 +34,7 @@ class StockRepository {
   // Fetch all stocks
   Future<List<Stock>> fetchStocks() async {
     final url = Uri.parse('$baseUrl/stocks');
+    print('Fetching stocks from $url');
     final response = await http.get(
       url,
       headers: {
@@ -39,9 +43,16 @@ class StockRepository {
     );
 
     if (response.statusCode == 200) {
-      List<dynamic> data = jsonDecode(response.body);
-      return data.map((stockJson) => Stock.fromJson(stockJson)).toList();
+      final responseBody = jsonDecode(response.body);
+
+      if (responseBody.containsKey('data')) {
+        List<dynamic> data = responseBody['data'];
+        return data.map((stockJson) => Stock.fromJson(stockJson)).toList();
+      } else {
+        throw Exception('Réponse inattendue : clé "data" manquante');
+      }
     } else {
+      print("Error: ${response.statusCode} - ${response.body}");
       throw Exception('Erreur lors du chargement des stocks');
     }
   }

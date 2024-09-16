@@ -14,10 +14,10 @@ import (
 // @Accept  json
 // @Produce  json
 // @Param createParticipationRequest body CreateParticipationRequest true "Create Participation Request"
-// @Success 200 {object} JSONResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Success 200 {object} models.JSONResponse
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
 // @Router /participations [post]
 func CreateParticipation(c *gin.Context) {
 	var req models.CreateParticipationRequest
@@ -78,10 +78,10 @@ func CreateParticipation(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param updateParticipationRequest body UpdateParticipationRequest true "Update Participation Request"
-// @Success 200 {object} JSONResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Success 200 {object} models.JSONResponse
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
 // @Router /participations [put]
 func UpdateParticipation(c *gin.Context) {
 	var req models.UpdateParticipationRequest

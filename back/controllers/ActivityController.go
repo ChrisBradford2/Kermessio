@@ -14,10 +14,10 @@ import (
 // @Accept  json
 // @Produce  json
 // @Param createActivityRequest body models.CreateActivityRequest true "Create Activity Request"
-// @Success 200 {object} JSONResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Success 200 {object} models.JSONResponse
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 401 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
 // @Security ApiKeyAuth
 // @Router /activities [post]
 func CreateActivity(c *gin.Context) {
@@ -68,8 +68,9 @@ func CreateActivity(c *gin.Context) {
 // @Description Get all activities for the current booth holder
 // @ID get-activities
 // @Produce  json
-// @Success 200 {object} JSONResponse
-// @Failure 500 {object} ErrorResponse
+// @Success 200 {object} models.JSONResponse
+// @Failure 401 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
 // @Router /activities [get]
 func GetActivities(c *gin.Context) {
 	boothHolder, exists := c.Get("currentUser")

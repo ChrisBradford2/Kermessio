@@ -11,6 +11,7 @@ import '../add_activity_page.dart';
 import '../../blocs/auth_bloc.dart';
 import '../../blocs/auth_state.dart';
 import '../add_stock_page.dart';
+import '../scan_or_enter_code_page.dart';
 
 class BoothHolderView extends StatefulWidget {
   final User user;
@@ -67,6 +68,7 @@ class _BoothHolderViewState extends State<BoothHolderView> {
     }
   }
 
+  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -126,6 +128,26 @@ class _BoothHolderViewState extends State<BoothHolderView> {
                                   );
                                 },
                                 child: const Text("Ajouter un consommable"),
+                              ),
+                              const SizedBox(height: 20),
+
+                              // Nouveau bouton pour scanner ou entrer un code
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const ScanAndValidateOrderPage(),
+                                    ),
+                                  ).then((result) {
+                                    if (result != null) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text(result)),
+                                      );
+                                    }
+                                  });
+                                },
+                                child: const Text("Scanner ou entrer un code"),
                               ),
                             ],
                           );

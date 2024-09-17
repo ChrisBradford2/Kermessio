@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"kermessio/database"
 	"kermessio/models"
 	"net/http"
@@ -162,98 +161,4 @@ func GetAllStocks(c *gin.Context) {
 		"page":    page,
 		"limit":   limit,
 	})
-}
-
-// BuyStock godoc
-// @Summary Buy a stock
-// @Description Allow a child to buy a stock from a booth holder
-// @ID buy-stock
-// @Accept  json
-// @Produce  json
-// @Param buyStockRequest body models.BuyStockRequest true "Buy Stock Request"
-// @Success 200 {object} models.JSONResponse
-// @Failure 400 {object} models.ErrorResponse
-// @Failure 401 {object} models.ErrorResponse
-// @Failure 500 {object} models.ErrorResponse
-// @Security ApiKeyAuth
-// @Router /stocks/buy [post]
-func BuyStock(c *gin.Context) {
-	var req models.BuyStockRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Get the booth holder
-	var boothHolder models.User
-	if err := database.DB.First(&boothHolder, req.BoothHolderID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Teneur de stand non trouvé"})
-		return
-	}
-
-	// Get the stock
-	var stock models.Stock
-	if err := database.DB.First(&stock, req.StockID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Stock non trouvé"})
-		return
-	}
-
-	// Check if there is enough stock quantity
-	if stock.Quantity <= 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Stock épuisé"})
-		return
-	}
-
-	// Get the child
-	child, exists := c.Get("currentUser")
-	if !exists || child == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non autorisé"})
-		return
-	}
-
-	currentUser, ok := child.(models.User)
-	if !ok || currentUser.Role != "child" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Seuls les enfants peuvent acheter des stocks"})
-		return
-	}
-
-	// Check if the child has enough tokens
-	if currentUser.Tokens < int64(stock.Price) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Pas assez de jetons pour acheter ce stock"})
-		return
-	}
-
-	// Deduct the tokens from the child
-	if err := database.DB.Model(&currentUser).Update("tokens", gorm.Expr("tokens - ?", stock.Price)).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la mise à jour des jetons de l'enfant"})
-		return
-	}
-
-	// Add the tokens to the booth holder
-	if err := database.DB.Model(&boothHolder).Update("tokens", gorm.Expr("tokens + ?", stock.Price)).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la mise à jour des jetons du teneur de stand"})
-		return
-	}
-
-	// Decrease the stock quantity
-	if err := database.DB.Model(&stock).Update("quantity", gorm.Expr("quantity - 1")).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la mise à jour de la quantité du stock"})
-		return
-	}
-
-	// Create a new stock for the child
-	newStock := models.Stock{
-		ItemName: stock.ItemName,
-		Type:     stock.Type,
-		Quantity: 1,
-		Price:    stock.Price,
-		UserID:   currentUser.ID,
-	}
-
-	if err := database.DB.Create(&newStock).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la création du stock pour l'enfant"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Achat effectué avec succès", "stock": newStock})
 }

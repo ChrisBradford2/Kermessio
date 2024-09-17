@@ -19,8 +19,10 @@ void main() async {
   await dotenv.load();
 
   // Initialize Stripe
-  Stripe.publishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY']!;
-  Stripe.instance.applySettings();
+  if (!kIsWeb) {
+    Stripe.publishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY']!;
+    Stripe.instance.applySettings();
+  }
 
   await AppConfig().init();
 

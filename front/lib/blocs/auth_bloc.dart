@@ -21,6 +21,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _onLoginRequested(AuthLoginRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
+      print('Tentative de connexion sur desktop/web');
       final userWithToken = await authRepository.login(event.username, event.password);
       final user = User.fromJson(userWithToken['user']);
       final token = userWithToken['token'];
@@ -29,11 +30,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         throw Exception("Token invalide reçu lors de l'authentification");
       }
 
+      print('Connexion réussie : $user');
       emit(AuthAuthenticated(user: user, token: token));
     } catch (e) {
+      print('Erreur de connexion : $e');
       emit(AuthError(message: e.toString()));
     }
   }
+
 
   // Handler for AuthLogoutRequested event
   void _onLogoutRequested(AuthLogoutRequested event, Emitter<AuthState> emit) async {

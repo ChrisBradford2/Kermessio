@@ -14,6 +14,7 @@ type User struct {
 	Tokens     int64      `json:"tokens" gorm:"default:0"`
 	Activities []Activity `json:"activities" gorm:"foreignKey:BoothHolderID"`
 	Purchases  []Purchase `json:"purchases" gorm:"foreignKey:UserID"`
+	Kermesses  []Kermesse `gorm:"many2many:kermesse_organizers;"`
 }
 
 type UserRegister struct {

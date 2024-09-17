@@ -13,5 +13,6 @@ func StockRoutes(r *gin.Engine) {
 		protected.POST("", controllers.CreateStock)
 		protected.GET("", controllers.GetStocks)
 		protected.GET("/all", controllers.GetAllStocks)
+		protected.PUT("/update", controllers.UpdateStockQuantity)
 	}
 }

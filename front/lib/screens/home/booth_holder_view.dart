@@ -12,6 +12,7 @@ import '../../blocs/auth_bloc.dart';
 import '../../blocs/auth_state.dart';
 import '../add_stock_page.dart';
 import '../scan_or_enter_code_page.dart';
+import '../update_stock_page.dart';
 
 class BoothHolderView extends StatefulWidget {
   final User user;
@@ -230,6 +231,29 @@ class _BoothHolderViewState extends State<BoothHolderView> {
                 return ListTile(
                   title: Text(stock.itemName),
                   subtitle: Text('Prix : ${stock.price} jetons - Quantité : ${stock.quantity}'),
+                  onTap: () {
+                    Map<String, dynamic> stockMap = {
+                      'id': stock.id,
+                      'item_name': stock.itemName,
+                      'quantity': stock.quantity,
+                      'price': stock.price,
+                    };
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UpdateStockPage(stock: stockMap),
+                      ),
+                    ).then((result) {
+                      if (result != null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(result)),
+                        );
+                        // Recharger les stocks après la mise à jour
+                        _fetchData();
+                      }
+                    });
+                  },
                 );
               },
             ),

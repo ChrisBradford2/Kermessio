@@ -143,7 +143,7 @@ func GetAllStocks(c *gin.Context) {
 	if err := database.DB.Table("stocks").
 		Select("stocks.*, users.username as booth_holder_username").
 		Joins("left join users on users.id = stocks.user_id").
-		Where("users.role = ?", "booth_holder").
+		Where("users.role = ? AND stocks.quantity > 0", "booth_holder").
 		Limit(limit).Offset(offset).
 		Find(&stocksWithUsers).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des stocks"})
@@ -161,4 +161,50 @@ func GetAllStocks(c *gin.Context) {
 		"page":    page,
 		"limit":   limit,
 	})
+}
+
+// UpdateStockQuantity godoc
+// @Summary Update stock quantity
+// @Description Update stock quantity
+// @ID update-stock-quantity
+// @Accept  json
+// @Produce  json
+// @Param updateStockQuantityRequest body req true "Update Stock Quantity Request"
+// @Success 200 {object} models.JSONResponse
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Security ApiKeyAuth
+// @Router /stocks/update [put]
+func UpdateStockQuantity(c *gin.Context) {
+	var req struct {
+		StockID  uint `json:"stockId"`
+		Quantity int  `json:"quantity"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	if req.Quantity <= 0 {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "La quantité doit être supérieure à 0"})
+		return
+	}
+
+	// Rechercher le stock
+	var stock models.Stock
+	if err := database.DB.First(&stock, req.StockID).Error; err != nil {
+		c.JSON(http.StatusNotFound, models.ErrorResponse{Error: "Stock non trouvé"})
+		return
+	}
+
+	// Mettre à jour la quantité
+	stock.Quantity = req.Quantity
+	if err := database.DB.Save(&stock).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Erreur lors de la mise à jour du stock"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Quantité mise à jour avec succès", "stock": stock})
 }

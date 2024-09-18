@@ -10,7 +10,7 @@ import '../config/app_config.dart';
 import '../models/kermesse_model.dart';
 import '../repositories/kermesse_repository.dart';
 import '../repositories/stock_repository.dart';
-import 'home/child_view.dart';
+import '../widgets/child/child_view_widget.dart';
 
 class SelectKermessePage extends StatefulWidget {
   const SelectKermessePage({super.key});

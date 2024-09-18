@@ -1,37 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:front/models/user_model.dart';
-import 'package:front/repositories/stock_repository.dart';
 import 'package:front/repositories/tombola_repository.dart';
 import '../../blocs/auth_bloc.dart';
 import '../../blocs/auth_event.dart';
 import '../../blocs/auth_state.dart';
-import '../../blocs/kermesse_bloc.dart';  // Import du KermesseBloc
+import '../../blocs/kermesse_bloc.dart';
 import '../../blocs/kermesse_state.dart';
 import '../../config/app_config.dart';
 import '../../models/purchase_model.dart';
-import '../../repositories/activity_repository.dart';
-import '../../repositories/participation_repository.dart';
 import '../../repositories/purchase_repository.dart';
-import '../activities_page.dart';
-import '../buy_stock_page.dart';
-import '../purchase_code_page.dart';
+import '../../widgets/child/activity_button_widget.dart';
+import '../../widgets/child/buy_stock_button.dart';
+import '../../widgets/child/child_view_widget.dart';
+import '../../widgets/child/purchase_list.dart';
+import '../../widgets/child/tombola_button_widget.dart';
 
-class ChildView extends StatefulWidget {
-  final User user;
-  final StockRepository stockRepository;
-
-  const ChildView({
-    Key? key,
-    required this.user,
-    required this.stockRepository,
-  }) : super(key: key);
-
-  @override
-  _ChildViewState createState() => _ChildViewState();
-}
-
-class _ChildViewState extends State<ChildView> {
+class ChildViewState extends State<ChildView> {
   List<Purchase> purchases = [];
   bool isLoading = true;
   bool hasBoughtTombolaTicket = false;
@@ -39,8 +23,12 @@ class _ChildViewState extends State<ChildView> {
   @override
   void initState() {
     super.initState();
-    _checkIfTombolaTicketBought();
-    _fetchPurchases();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    await _checkIfTombolaTicketBought();
+    await _fetchPurchases();
   }
 
   Future<void> _fetchPurchases() async {
@@ -50,7 +38,6 @@ class _ChildViewState extends State<ChildView> {
         baseUrl: AppConfig().baseUrl,
         token: authState.token,
       );
-
       try {
         final fetchedPurchases = await purchaseRepository.fetchPurchasesByUser(widget.user.id);
         setState(() {
@@ -70,22 +57,19 @@ class _ChildViewState extends State<ChildView> {
     final authState = BlocProvider.of<AuthBloc>(context).state;
     final kermesseState = BlocProvider.of<KermesseBloc>(context).state;
 
+    // Vérifiez si kermesseState est de type KermesseSelected avant d'accéder à kermesseId
     if (authState is AuthAuthenticated && kermesseState is KermesseSelected) {
       final tombolaRepository = TombolaRepository(
         baseUrl: AppConfig().baseUrl,
         token: authState.token,
       );
-
       final hasTicket = await tombolaRepository.checkIfUserHasTicket(
         userId: widget.user.id,
-        kermesseId: kermesseState.kermesseId,
+        kermesseId: kermesseState.kermesseId, // kermesseId accessible uniquement dans KermesseSelected
       );
-
       setState(() {
         hasBoughtTombolaTicket = hasTicket;
       });
-
-      print('Has bought ticket: $hasTicket');
     }
   }
 
@@ -96,200 +80,98 @@ class _ChildViewState extends State<ChildView> {
         baseUrl: AppConfig().baseUrl,
         token: authState.token,
       );
-
-      if (widget.user.tokens >= 10) { // Vérification du solde de jetons
+      if (widget.user.tokens >= 10) {
         try {
           final response = await tombolaRepository.buyTicket(widget.user.id, widget.user.role, kermesseId);
           if (response['success']) {
-            // Rafraîchir les informations de l'utilisateur
             BlocProvider.of<AuthBloc>(context).add(AuthRefreshRequested());
-
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Ticket de tombola acheté avec succès!'),
-                backgroundColor: Colors.green,
-              ),
+              const SnackBar(content: Text('Ticket de tombola acheté avec succès!'), backgroundColor: Colors.green),
             );
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(response['error'] ?? 'Erreur lors de l\'achat du ticket.'),
-                backgroundColor: Colors.red,
-              ),
-            );
+            _showError(response['error'] ?? 'Erreur lors de l\'achat du ticket.');
           }
         } catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Erreur : $e'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          _showError('Erreur : $e');
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Solde insuffisant de jetons.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        _showError('Solde insuffisant de jetons.');
       }
     }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), backgroundColor: Colors.red));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Espace Enfant"),
-      ),
+      appBar: AppBar(title: const Text("Espace Enfant")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Bienvenue dans ton espace !",
-              style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
-            ),
+            _buildWelcomeSection(),
             const SizedBox(height: 20),
-            Text(
-              "Ton solde de jetons : ${widget.user.tokens} jetons",
-              style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-            ),
+            _buildTokenDisplay(),
             const SizedBox(height: 20),
-            BlocBuilder<AuthBloc, AuthState>(
-              builder: (context, authState) {
-                if (authState is AuthAuthenticated) {
-                  return Column(
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ActivitiesPage(
-                                activityRepository: ActivityRepository(
-                                  baseUrl: AppConfig().baseUrl,
-                                  token: authState.token,
-                                ),
-                                participationRepository: ParticipationRepository(
-                                  baseUrl: AppConfig().baseUrl,
-                                  token: authState.token,
-                                ),
-                                user: authState.user,
-                              ),
-                            ),
-                          );
-                        },
-                        child: const Text("Participer à une activité"),
-                      ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => BuyStockPage(
-                                stockRepository: widget.stockRepository,
-                                user: widget.user,
-                              ),
-                            ),
-                          );
-                        },
-                        child: const Text("Acheter un consommable"),
-                      ),
-                      const SizedBox(height: 20),
-                      BlocBuilder<KermesseBloc, KermesseState>(
-                        builder: (context, kermesseState) {
-                          if (kermesseState is KermesseSelected) {
-                            if (hasBoughtTombolaTicket) {
-                              // Désactiver le bouton si l'utilisateur a déjà acheté un ticket
-                              return const ElevatedButton(
-                                onPressed: null,
-                                child: Text(
-                                  "Acheter un ticket de tombola (10 jetons)",
-                                  style: TextStyle(color: Colors.grey),
-                                )
-                              );
-                            }
-                            return ElevatedButton(
-                              onPressed: () {
-                                _buyTombolaTicket(kermesseState.kermesseId); // Passer l'ID de la kermesse ici
-                              },
-                              child: const Text("Acheter un ticket de tombola (10 jetons)"),
-                            );
-                          } else {
-                            return const ElevatedButton(
-                              onPressed: null,
-                              child: Text("Acheter un ticket de tombola (10 jetons)"),
-                            );
-                          }
-                        },
-                      ),
-                    ],
-                  );
-                } else {
-                  return const Center(
-                    child: Text("Vous devez être connecté pour accéder aux activités."),
-                  );
-                }
-              },
-            ),
+            _buildActions(context),
             const SizedBox(height: 20),
-            const Text(
-              "Tes achats :",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : Expanded(child: _buildPurchaseList()),
+            _buildPurchasesSection(),
           ],
         ),
       ),
     );
   }
 
-  // Construction de la liste des achats
-  Widget _buildPurchaseList() {
-    if (purchases.isEmpty) {
-      return const Text("Aucun achat effectué");
-    }
+  Widget _buildWelcomeSection() {
+    return const Text("Bienvenue dans ton espace !", style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold));
+  }
 
-    return ListView.builder(
-      itemCount: purchases.length,
-      itemBuilder: (context, index) {
-        final purchase = purchases[index];
-        return ListTile(
-          title: Text(purchase.itemName),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildTokenDisplay() {
+    return Text(
+      "Ton solde de jetons : ${widget.user.tokens} jetons",
+      style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+    );
+  }
+
+  Widget _buildActions(BuildContext context) {
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, authState) {
+        if (authState is AuthAuthenticated) {
+          return Column(
             children: [
-              Text('Quantité : ${purchase.quantity}, Prix : ${purchase.price} jetons'),
-              Chip(
-                label: Text(
-                  purchase.status == 'approved' ? 'Validé' :
-                  purchase.status == 'rejected' ? 'Refusé' :
-                  'En attente',
-                  style: const TextStyle(color: Colors.white),
-                ),
-                backgroundColor: purchase.status == 'approved' ? Colors.green :
-                purchase.status == 'rejected' ? Colors.red :
-                Colors.orange,
+              ActivityButton(authState: authState),
+              const SizedBox(height: 20),
+              BuyStockButton(stockRepository: widget.stockRepository, user: widget.user),
+              const SizedBox(height: 20),
+              BlocBuilder<KermesseBloc, KermesseState>(
+                builder: (context, kermesseState) {
+                  if (kermesseState is KermesseSelected) {
+                    return TombolaButton(
+                      hasBoughtTicket: hasBoughtTombolaTicket,
+                      onBuyTicket: () => _buyTombolaTicket(kermesseState.kermesseId),
+                    );
+                  } else {
+                    return  TombolaButton(hasBoughtTicket: true, onBuyTicket: () {});
+
+                  }
+                },
               ),
             ],
-          ),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PurchaseCodePage(purchase: purchase),
-              ),
-            );
-          },
-        );
+          );
+        } else {
+          return const Center(child: Text("Vous devez être connecté pour accéder aux activités."));
+        }
       },
     );
+  }
+
+  Widget _buildPurchasesSection() {
+    return isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : Expanded(child: PurchaseList(purchases: purchases));
   }
 }

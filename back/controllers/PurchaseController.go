@@ -105,6 +105,7 @@ func CreatePurchase(c *gin.Context) {
 		Quantity:       1,
 		Price:          stock.Price,
 		ValidationCode: validationCode,
+		Status:         models.Pending,
 	}
 
 	if err := database.DB.Create(&purchase).Error; err != nil {
@@ -112,7 +113,19 @@ func CreatePurchase(c *gin.Context) {
 		return
 	}
 
-	// Charger à nouveau l'objet purchase avec ses relations
+	// Enregistrer l'interaction
+	interaction := models.Interaction{
+		UserID:     currentUser.ID,
+		StockID:    &stock.ID,
+		ActivityID: nil,
+		Tokens:     stock.Price * -1,
+	}
+
+	if err := database.DB.Create(&interaction).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de l'enregistrement de l'interaction"})
+		return
+	}
+
 	if err := database.DB.Preload("Stock").First(&purchase).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors du chargement des détails de l'achat"})
 		return

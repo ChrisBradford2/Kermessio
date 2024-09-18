@@ -8,9 +8,13 @@ import '../blocs/auth_bloc.dart';
 import '../blocs/auth_state.dart';
 import '../config/app_config.dart';
 import '../models/kermesse_model.dart';
+import '../models/user_model.dart';
 import '../repositories/kermesse_repository.dart';
 import '../repositories/stock_repository.dart';
 import '../widgets/child/child_view_widget.dart';
+import 'home/booth_holder_view.dart';
+import 'home/organizer_view.dart';
+import 'home/parent_view.dart';
 
 class SelectKermessePage extends StatefulWidget {
   const SelectKermessePage({super.key});
@@ -97,20 +101,47 @@ class _SelectKermessePageState extends State<SelectKermessePage> {
                   token: authState.token,
                 );
 
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ChildView(
-                      user: authState.user,
-                      stockRepository: stockRepository,
-                    ),
-                  ),
-                );
+                // Rediriger vers la vue appropriée selon le rôle de l'utilisateur
+                _navigateToRoleBasedView(authState.user, stockRepository);
               }
             },
           );
         },
       ),
     );
+  }
+
+  void _navigateToRoleBasedView(User user, StockRepository stockRepository) {
+    if (user.role == 'parent') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ParentView(user: user),
+        ),
+      );
+    } else if (user.role == 'booth_holder') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BoothHolderView(user: user),
+        ),
+      );
+    } else if (user.role == 'child') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChildView(
+            user: user,
+            stockRepository: stockRepository,
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Rôle utilisateur non reconnu.'),
+        ),
+      );
+    }
   }
 }

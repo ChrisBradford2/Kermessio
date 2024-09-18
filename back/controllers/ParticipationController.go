@@ -66,6 +66,19 @@ func CreateParticipation(c *gin.Context) {
 		return
 	}
 
+	// Enregistrer l'interaction
+	interaction := models.Interaction{
+		UserID:     req.UserID,
+		ActivityID: &activity.ID,
+		StockID:    nil,
+		Tokens:     -int(activity.Price),
+	}
+
+	if err := database.DB.Create(&interaction).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Erreur lors de l'enregistrement de l'interaction"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"message":       "Participation enregistrée avec succès",
 		"participation": participation,

@@ -6,6 +6,7 @@ import (
 	"kermessio/database"
 	"kermessio/models"
 	"net/http"
+	"strconv"
 )
 
 // CreateChild godoc
@@ -339,4 +340,33 @@ func AssignTokensToChild(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Tokens assigned successfully", "child": child.Username, "tokens": child.Tokens})
+}
+
+// GetChildInteractions godoc
+// @Summary Get interactions of children linked to the current authenticated parent
+// @Description Get interactions of children linked to the current authenticated parent
+// @Tags children
+// @Accept json
+// @Produce json
+// @Param parentId path string true "Parent ID"
+// @Security ApiKeyAuth
+// @Success 200 {array} models.Interaction
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /user/child/{childId}/interactions [get]
+func GetChildInteractions(c *gin.Context) {
+	childID, err := strconv.Atoi(c.Param("childId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID d'enfant invalide"})
+		return
+	}
+
+	var interactions []models.Interaction
+	if err := database.DB.Where("user_id = ?", childID).Preload("Activity").Preload("Stock").Find(&interactions).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des interactions"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"interactions": interactions})
 }

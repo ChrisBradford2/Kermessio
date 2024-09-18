@@ -4,8 +4,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"kermessio/database"
 	"kermessio/models"
+	"math/rand"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func GetTombolaByKermesse(c *gin.Context) {
@@ -95,4 +97,53 @@ func CheckIfUserHasTicket(c *gin.Context) {
 	isParticipant := database.DB.Model(&tombola).Where("user_id = ?", userID).Association("Participants").Count() > 0
 
 	c.JSON(http.StatusOK, gin.H{"has_ticket": isParticipant})
+}
+
+func DrawTombolaWinner(c *gin.Context) {
+	kermesseID, err := strconv.Atoi(c.Param("kermesseId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de kermesse invalide"})
+		return
+	}
+
+	// Récupérer la tombola associée à la kermesse
+	var tombola models.Tombola
+	if err := database.DB.Preload("Participants").Where("kermesse_id = ?", kermesseID).First(&tombola).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Tombola non trouvée pour cette kermesse"})
+		return
+	}
+
+	// Vérifier si des participants sont inscrits à la tombola
+	if len(tombola.Participants) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Aucun participant pour cette tombola"})
+		return
+	}
+
+	// Vérifier si le tirage a déjà eu lieu
+	if tombola.Drawn {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Le tirage a déjà été effectué"})
+		return
+	}
+
+	source := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(source)
+	winnerIndex := r.Intn(len(tombola.Participants))
+	winner := tombola.Participants[winnerIndex]
+
+	// Marquer la tombola comme tirée
+	tombola.Drawn = true
+	if err := database.DB.Save(&tombola).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la mise à jour de la tombola"})
+		return
+	}
+
+	// Retourner les informations du gagnant
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Le tirage a été effectué avec succès",
+		"winner": gin.H{
+			"id":       winner.ID,
+			"username": winner.Username,
+			"email":    winner.Email,
+		},
+	})
 }

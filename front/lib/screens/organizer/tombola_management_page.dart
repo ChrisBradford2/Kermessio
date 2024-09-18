@@ -20,6 +20,8 @@ class _TombolaManagementPageState extends State<TombolaManagementPage> {
   bool _isLoading = true;
   Map<String, dynamic>? _tombolaData;
   String _errorMessage = '';
+  String? _winner;
+  bool _isDrawn = false;
 
   @override
   void initState() {
@@ -32,8 +34,8 @@ class _TombolaManagementPageState extends State<TombolaManagementPage> {
 
     if (authState is AuthAuthenticated) {
       final token = authState.token;
-
       final url = '${AppConfig().baseUrl}/tombola/${widget.kermesseId}';
+
       try {
         final response = await http.get(
           Uri.parse(url),
@@ -45,6 +47,7 @@ class _TombolaManagementPageState extends State<TombolaManagementPage> {
         if (response.statusCode == 200) {
           setState(() {
             _tombolaData = json.decode(response.body);
+            _isDrawn = _tombolaData!['drawn'];
             _isLoading = false;
           });
         } else {
@@ -67,14 +70,58 @@ class _TombolaManagementPageState extends State<TombolaManagementPage> {
     }
   }
 
-  void _drawTombola() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Tirage de la tombola effectué !'),
-      ),
-    );
-  }
+  Future<void> _drawTombola() async {
+    final authState = context.read<AuthBloc>().state;
 
+    if (authState is AuthAuthenticated) {
+      final token = authState.token;
+      final url = '${AppConfig().baseUrl}/tombola/${widget.kermesseId}/draw';
+
+      try {
+        final response = await http.post(
+          Uri.parse(url),
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        );
+
+        if (response.statusCode == 200) {
+          final responseData = json.decode(response.body);
+          setState(() {
+            _winner = responseData['winner']['username'];
+            _isDrawn = true;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Le gagnant est : ${_winner!}'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          setState(() {
+            _errorMessage = 'Erreur lors du tirage de la tombola';
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erreur : ${_errorMessage}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (error) {
+        setState(() {
+          _errorMessage = 'Une erreur s\'est produite : $error';
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur : $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,8 +141,7 @@ class _TombolaManagementPageState extends State<TombolaManagementPage> {
             const SizedBox(height: 10),
             if (_tombolaData!['prizes'] is String)
               Text(_tombolaData!['prizes'])
-            else if (_tombolaData!['prizes'] is List &&
-                _tombolaData!['prizes'].isEmpty)
+            else if (_tombolaData!['prizes'] is List && _tombolaData!['prizes'].isEmpty)
               const Text('Aucun lot pour cette tombola.')
             else
               ..._tombolaData!['prizes'].map<Widget>((prize) {
@@ -110,8 +156,7 @@ class _TombolaManagementPageState extends State<TombolaManagementPage> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            if (_tombolaData!['participants'] != null &&
-                _tombolaData!['participants'].isNotEmpty)
+            if (_tombolaData!['participants'] != null && _tombolaData!['participants'].isNotEmpty)
               ..._tombolaData!['participants'].map<Widget>((participant) {
                 return ListTile(
                   title: Text(participant['username']),
@@ -122,10 +167,17 @@ class _TombolaManagementPageState extends State<TombolaManagementPage> {
             const SizedBox(height: 30),
             Center(
               child: ElevatedButton(
-                onPressed: _drawTombola,
-                child: const Text('Faire le tirage'),
+                onPressed: _isDrawn
+                    ? null
+                    : _drawTombola,
+                child: Text(_isDrawn ? 'Tombola déjà tirée' : 'Faire le tirage'),
               ),
             ),
+            if (_winner != null) ...[
+              const SizedBox(height: 30),
+              Text('Gagnant de la tombola : $_winner',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ],
           ],
         ),
       )

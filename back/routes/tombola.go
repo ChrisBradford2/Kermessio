@@ -12,5 +12,6 @@ func TombolaRoutes(r *gin.Engine) {
 	{
 		protected.GET("/:kermesseId", controllers.GetTombolaByKermesse)
 		protected.POST("/buy", controllers.BuyTombolaTicket)
+		protected.GET("/check/:kermesseId/:userId", controllers.CheckIfUserHasTicket)
 	}
 }

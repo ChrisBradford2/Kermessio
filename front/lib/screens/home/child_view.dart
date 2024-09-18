@@ -4,6 +4,7 @@ import 'package:front/models/user_model.dart';
 import 'package:front/repositories/stock_repository.dart';
 import 'package:front/repositories/tombola_repository.dart';
 import '../../blocs/auth_bloc.dart';
+import '../../blocs/auth_event.dart';
 import '../../blocs/auth_state.dart';
 import '../../blocs/kermesse_bloc.dart';  // Import du KermesseBloc
 import '../../blocs/kermesse_state.dart';
@@ -33,10 +34,12 @@ class ChildView extends StatefulWidget {
 class _ChildViewState extends State<ChildView> {
   List<Purchase> purchases = [];
   bool isLoading = true;
+  bool hasBoughtTombolaTicket = false;
 
   @override
   void initState() {
     super.initState();
+    _checkIfTombolaTicketBought();
     _fetchPurchases();
   }
 
@@ -63,7 +66,29 @@ class _ChildViewState extends State<ChildView> {
     }
   }
 
-  // Méthode pour acheter un ticket de tombola avec l'ID de la kermesse récupéré via le BLoC
+  Future<void> _checkIfTombolaTicketBought() async {
+    final authState = BlocProvider.of<AuthBloc>(context).state;
+    final kermesseState = BlocProvider.of<KermesseBloc>(context).state;
+
+    if (authState is AuthAuthenticated && kermesseState is KermesseSelected) {
+      final tombolaRepository = TombolaRepository(
+        baseUrl: AppConfig().baseUrl,
+        token: authState.token,
+      );
+
+      final hasTicket = await tombolaRepository.checkIfUserHasTicket(
+        userId: widget.user.id,
+        kermesseId: kermesseState.kermesseId,
+      );
+
+      setState(() {
+        hasBoughtTombolaTicket = hasTicket;
+      });
+
+      print('Has bought ticket: $hasTicket');
+    }
+  }
+
   Future<void> _buyTombolaTicket(int kermesseId) async {
     final authState = BlocProvider.of<AuthBloc>(context).state;
     if (authState is AuthAuthenticated) {
@@ -76,9 +101,9 @@ class _ChildViewState extends State<ChildView> {
         try {
           final response = await tombolaRepository.buyTicket(widget.user.id, widget.user.role, kermesseId);
           if (response['success']) {
-            setState(() {
-              widget.user.tokens -= 10; // Déduire 10 jetons après l'achat
-            });
+            // Rafraîchir les informations de l'utilisateur
+            BlocProvider.of<AuthBloc>(context).add(AuthRefreshRequested());
+
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Ticket de tombola acheté avec succès!'),
@@ -178,6 +203,16 @@ class _ChildViewState extends State<ChildView> {
                       BlocBuilder<KermesseBloc, KermesseState>(
                         builder: (context, kermesseState) {
                           if (kermesseState is KermesseSelected) {
+                            if (hasBoughtTombolaTicket) {
+                              // Désactiver le bouton si l'utilisateur a déjà acheté un ticket
+                              return const ElevatedButton(
+                                onPressed: null,
+                                child: Text(
+                                  "Acheter un ticket de tombola (10 jetons)",
+                                  style: TextStyle(color: Colors.grey),
+                                )
+                              );
+                            }
                             return ElevatedButton(
                               onPressed: () {
                                 _buyTombolaTicket(kermesseState.kermesseId); // Passer l'ID de la kermesse ici

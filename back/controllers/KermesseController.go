@@ -46,12 +46,22 @@ func CreateKermesse(c *gin.Context) {
 		return
 	}
 
+	tombola := models.Tombola{
+		KermesseID: kermesse.ID,
+	}
+
+	if err := database.DB.Create(&tombola).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la création de la tombola"})
+		return
+	}
+
 	invitationCode := generateInvitationCode(kermesse.ID)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":         "Kermesse créée avec succès",
 		"invitation_code": invitationCode,
 		"kermesse":        kermesse,
+		"tombola":         tombola,
 	})
 }
 
@@ -90,7 +100,7 @@ func JoinKermesse(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Vous avez rejoint la kermesse avec succès", "kermesse": kermesse})
 }
 
-// GetOrganizersKermesses godoc
+// GetUserKermesses godoc
 // @Summary Get the kermesses of the current user
 // @Description Get the kermesses of the current user
 // @Tags kermesses
@@ -99,24 +109,34 @@ func JoinKermesse(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Success 200 {object} models.Kermesse
 // @Router /kermesses [get]
-func GetOrganizersKermesses(c *gin.Context) {
-	organizer, exists := c.Get("currentUser")
-	if !exists || organizer == nil {
+func GetUserKermesses(c *gin.Context) {
+	currentUser, exists := c.Get("currentUser")
+	if !exists || currentUser == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non autorisé"})
 		return
 	}
 
-	currentUser, ok := organizer.(models.User)
-	if !ok || currentUser.Role != "organizer" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Seuls les organisateurs peuvent voir leurs kermesses"})
+	user, ok := currentUser.(models.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non trouvé"})
 		return
 	}
 
-	var user models.User
-	if err := database.DB.Preload("Kermesses").First(&user, currentUser.ID).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des kermesses"})
-		return
+	var kermesses []models.Kermesse
+	if user.Role == "organizer" {
+		if err := database.DB.Preload("KermessesAsOrganizer").First(&user, user.ID).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des kermesses pour l'organisateur"})
+			return
+		}
+		kermesses = user.KermessesAsOrganizer
+	} else {
+		if err := database.DB.Preload("KermessesAsParticipant").First(&user, user.ID).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des kermesses pour le participant"})
+			return
+		}
+		kermesses = user.KermessesAsParticipant
 	}
 
-	c.JSON(http.StatusOK, gin.H{"kermesses": user.Kermesses})
+	// Retourner les kermesses
+	c.JSON(http.StatusOK, gin.H{"kermesses": kermesses})
 }

@@ -23,13 +23,16 @@ class _OrganizerViewState extends State<OrganizerView> {
   @override
   void initState() {
     super.initState();
-    _kermesseRepository = KermesseRepository(baseUrl: AppConfig().baseUrl);
+    _kermesseRepository = KermesseRepository(
+        baseUrl: AppConfig().baseUrl,
+        token: widget.token
+    );
     _fetchKermesses();
   }
 
   Future<void> _fetchKermesses() async {
     try {
-      final kermesses = await _kermesseRepository.getKermesses(widget.token);
+      final kermesses = await _kermesseRepository.getKermesses();
       setState(() {
         _kermesses = kermesses;
         _isLoading = false;

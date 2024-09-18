@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:front/models/user_model.dart';
 import 'package:front/repositories/stock_repository.dart';
+import 'package:front/repositories/tombola_repository.dart';
 import '../../blocs/auth_bloc.dart';
 import '../../blocs/auth_state.dart';
+import '../../blocs/kermesse_bloc.dart';  // Import du KermesseBloc
+import '../../blocs/kermesse_state.dart';
 import '../../config/app_config.dart';
 import '../../models/purchase_model.dart';
 import '../../repositories/activity_repository.dart';
@@ -56,6 +59,55 @@ class _ChildViewState extends State<ChildView> {
           isLoading = false;
         });
         print('Error fetching purchases: $e');
+      }
+    }
+  }
+
+  // Méthode pour acheter un ticket de tombola avec l'ID de la kermesse récupéré via le BLoC
+  Future<void> _buyTombolaTicket(int kermesseId) async {
+    final authState = BlocProvider.of<AuthBloc>(context).state;
+    if (authState is AuthAuthenticated) {
+      final tombolaRepository = TombolaRepository(
+        baseUrl: AppConfig().baseUrl,
+        token: authState.token,
+      );
+
+      if (widget.user.tokens >= 10) { // Vérification du solde de jetons
+        try {
+          final response = await tombolaRepository.buyTicket(widget.user.id, widget.user.role, kermesseId);
+          if (response['success']) {
+            setState(() {
+              widget.user.tokens -= 10; // Déduire 10 jetons après l'achat
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Ticket de tombola acheté avec succès!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(response['error'] ?? 'Erreur lors de l\'achat du ticket.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erreur : $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Solde insuffisant de jetons.'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
@@ -121,6 +173,24 @@ class _ChildViewState extends State<ChildView> {
                           );
                         },
                         child: const Text("Acheter un consommable"),
+                      ),
+                      const SizedBox(height: 20),
+                      BlocBuilder<KermesseBloc, KermesseState>(
+                        builder: (context, kermesseState) {
+                          if (kermesseState is KermesseSelected) {
+                            return ElevatedButton(
+                              onPressed: () {
+                                _buyTombolaTicket(kermesseState.kermesseId); // Passer l'ID de la kermesse ici
+                              },
+                              child: const Text("Acheter un ticket de tombola (10 jetons)"),
+                            );
+                          } else {
+                            return const ElevatedButton(
+                              onPressed: null,
+                              child: Text("Acheter un ticket de tombola (10 jetons)"),
+                            );
+                          }
+                        },
                       ),
                     ],
                   );

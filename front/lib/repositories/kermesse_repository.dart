@@ -4,10 +4,11 @@ import '../models/kermesse_model.dart';
 
 class KermesseRepository {
   final String? baseUrl;
+  final String token;
 
-  KermesseRepository({required this.baseUrl});
+  KermesseRepository({required this.baseUrl, required this.token});
 
-  Future<List<Kermesse>> getKermesses(String token) async {
+  Future<List<Kermesse>> getKermesses() async {
     final response = await http.get(
       Uri.parse('$baseUrl/kermesses'),
       headers: {

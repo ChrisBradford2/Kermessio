@@ -20,14 +20,16 @@ class KermesseDetailsPage extends StatefulWidget {
 class _KermesseDetailsPageState extends State<KermesseDetailsPage> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    ViewStandsPage(),
-    ViewGlobalRevenuePage(),
-    ChatPage(),
-    TombolaManagementPage(),
-    PointsRankingPage(),
-    InteractiveMapPage(),
-  ];
+  List<Widget> get _widgetOptions {
+    return [
+      const ViewStandsPage(),
+      const ViewGlobalRevenuePage(),
+      const ChatPage(),
+      TombolaManagementPage(kermesseId: widget.kermesse.id),
+      const PointsRankingPage(),
+      const InteractiveMapPage(),
+    ];
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -39,7 +41,7 @@ class _KermesseDetailsPageState extends State<KermesseDetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Détails de la Kermesse'),
+        title: Text('Détails de la Kermesse : ${widget.kermesse.name}'),
       ),
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
@@ -70,10 +72,10 @@ class _KermesseDetailsPageState extends State<KermesseDetailsPage> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue, // Couleur des items sélectionnés
-        unselectedItemColor: Colors.grey[600], // Couleur des items non sélectionnés
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey[600],
         onTap: _onItemTapped,
-        backgroundColor: Colors.grey[200], // Couleur de fond de la barre
+        backgroundColor: Colors.grey[200],
       ),
     );
   }

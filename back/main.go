@@ -63,6 +63,12 @@ func main() {
 	if err := database.DB.AutoMigrate(&models.Purchase{}); err != nil {
 		log.Fatal("Failed to migrate purchases: ", err)
 	}
+	if err := database.DB.AutoMigrate(&models.Kermesse{}); err != nil {
+		log.Fatal("Failed to migrate kermesses: ", err)
+	}
+	if err := database.DB.AutoMigrate(&models.Tombola{}); err != nil {
+		log.Fatal("Failed to migrate tombolas: ", err)
+	}
 	log.Println("Database migrated!")
 
 	if os.Getenv("GO_ENV") == "production" {
@@ -99,6 +105,8 @@ func main() {
 	routes.StockRoutes(r)
 	routes.ParticipationRoutes(r)
 	routes.PurchaseRoutes(r)
+	routes.KermesseRoutes(r)
+	routes.TombolaRoutes(r)
 
 	// Swagger documentation
 	docs.SwaggerInfo.Title = "Kermessio API"

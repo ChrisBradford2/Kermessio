@@ -93,8 +93,9 @@ class _TombolaManagementPageState extends State<TombolaManagementPage> {
             ),
             const SizedBox(height: 10),
             if (_tombolaData!['prizes'] is String)
-              Text(_tombolaData!['prizes']) // Afficher directement si c'est une chaîne de caractères
-            else if (_tombolaData!['prizes'] is List && _tombolaData!['prizes'].isEmpty)
+              Text(_tombolaData!['prizes'])
+            else if (_tombolaData!['prizes'] is List &&
+                _tombolaData!['prizes'].isEmpty)
               const Text('Aucun lot pour cette tombola.')
             else
               ..._tombolaData!['prizes'].map<Widget>((prize) {
@@ -103,6 +104,21 @@ class _TombolaManagementPageState extends State<TombolaManagementPage> {
                   subtitle: Text('Valeur : ${prize['value']}'),
                 );
               }).toList(),
+            const SizedBox(height: 30),
+            const Text(
+              'Participants inscrits :',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            if (_tombolaData!['participants'] != null &&
+                _tombolaData!['participants'].isNotEmpty)
+              ..._tombolaData!['participants'].map<Widget>((participant) {
+                return ListTile(
+                  title: Text(participant['username']),
+                );
+              }).toList()
+            else
+              const Text('Aucun participant pour cette tombola.'),
             const SizedBox(height: 30),
             Center(
               child: ElevatedButton(

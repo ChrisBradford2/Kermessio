@@ -18,5 +18,6 @@ func UserRoutes(r *gin.Engine) {
 
 		// Route for organizer role
 		protected.GET("/organizer/:kermesseId/revenue", controllers.GetKermesseRevenue)
+		protected.GET("/organizer/stands", controllers.GetStands)
 	}
 }

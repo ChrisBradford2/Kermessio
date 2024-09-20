@@ -7,6 +7,7 @@ import (
 	"kermessio/config"
 	"kermessio/database"
 	"kermessio/models"
+	"math/rand"
 	"net/http"
 	"time"
 )
@@ -135,12 +136,21 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	x, y := 0, 0
+	if input.Role == config.RoleBoothHolder {
+		source := rand.NewSource(time.Now().UnixNano())
+		r := rand.New(source)
+		x = r.Intn(10)
+		y = r.Intn(10)
+	}
 	// Create a new user in the database
 	user := models.User{
-		Username: input.Username,
-		Email:    input.Email,
-		Password: string(hashedPassword),
-		Role:     input.Role,
+		Username:  input.Username,
+		Email:     input.Email,
+		Password:  string(hashedPassword),
+		Role:      input.Role,
+		PositionX: x,
+		PositionY: y,
 	}
 
 	if err := database.DB.Create(&user).Error; err != nil {

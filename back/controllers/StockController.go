@@ -53,12 +53,12 @@ func CreateStock(c *gin.Context) {
 	}
 
 	newStock := models.Stock{
-		ItemName:   req.ItemName,
-		Type:       models.StockType(req.Type),
-		Quantity:   req.Quantity,
-		Price:      req.Price,
-		UserID:     user.ID,
-		KermesseID: req.KermesseID,
+		ItemName:      req.ItemName,
+		Type:          models.StockType(req.Type),
+		Quantity:      req.Quantity,
+		Price:         req.Price,
+		BoothHolderID: user.ID,
+		KermesseID:    req.KermesseID,
 	}
 
 	if err := database.DB.Create(&newStock).Error; err != nil {

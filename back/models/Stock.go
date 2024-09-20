@@ -15,6 +15,7 @@ type Stock struct {
 	Quantity   int        `json:"quantity" gorm:"not null" binding:"required" example:"quantity"`
 	Price      int        `json:"price" gorm:"not null" binding:"required" example:"price"`
 	UserID     uint       `json:"user_id" gorm:"not null" example:"1"`
+	User       User       `json:"user" gorm:"foreignKey:UserID"`
 	Purchases  []Purchase `json:"purchases" gorm:"foreignKey:StockID"`
 	KermesseID uint       `json:"kermesse_id" gorm:"not null"`
 	Kermesse   Kermesse   `json:"kermesse" gorm:"foreignKey:KermesseID"`

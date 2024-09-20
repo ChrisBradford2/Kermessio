@@ -186,9 +186,9 @@ class ChildDetailsPageState extends State<ChildDetailsPage> {
           final interaction = _interactions[index];
           final activity = interaction['activity_id'];
           final stock = interaction['stock'];
-          print('Stock: $stock');
           final createdAt = interaction['createdAt'];
           final formattedDate = DateFormat('dd-MM-yyyy HH:mm').format(DateTime.parse(createdAt).toLocal());
+          final boothHolder = interaction['stock'] != null ? interaction['stock']['user'] : null;
           return ListTile(
             title: activity != null
                 ? Text('Activité : ${activity['name']}')
@@ -202,13 +202,13 @@ class ChildDetailsPageState extends State<ChildDetailsPage> {
                   children: <Widget>[
                     const Text('Chez '),
                     Text(
-                      stock['booth_holder_id'] != null
-                        ? interaction['booth_holder_id']['name']
-                        : 'un utilisateur inconnu',
+                      boothHolder != null
+                          ? boothHolder['username']
+                          : 'un utilisateur inconnu',
                       style: const TextStyle(fontStyle: FontStyle.italic),
                     ),
                   ],
-                )
+                ),
               ],
             ),
           );

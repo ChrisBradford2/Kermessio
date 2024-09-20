@@ -10,7 +10,7 @@ class StockRepository {
   StockRepository({this.baseUrl, required this.token});
 
   // Create a stock
-  Future<Stock?> createStock(Stock stock) async {
+  Future<Stock?> createStock(Stock stock, int kermesseId) async {
     final url = Uri.parse('$baseUrl/stocks');
     final response = await http.post(
       url,
@@ -18,7 +18,10 @@ class StockRepository {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
-      body: jsonEncode(stock.toJson()),
+      body: jsonEncode({
+        ...stock.toJson(),
+        'kermesse_id': kermesseId,
+      }),
     );
 
     if (response.statusCode == 200) {

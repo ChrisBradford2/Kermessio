@@ -69,6 +69,9 @@ func main() {
 	if err := database.DB.AutoMigrate(&models.Tombola{}); err != nil {
 		log.Fatal("Failed to migrate tombolas: ", err)
 	}
+	if err := database.DB.AutoMigrate(&models.Interaction{}); err != nil {
+		log.Fatal("Failed to migrate interactions: ", err)
+	}
 	log.Println("Database migrated!")
 
 	if os.Getenv("GO_ENV") == "production" {

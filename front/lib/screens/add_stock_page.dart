@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../repositories/stock_repository.dart';
 import '../models/stock_model.dart';
+import '../blocs/kermesse_bloc.dart';
+import '../blocs/kermesse_state.dart';
 
 class AddStockPage extends StatefulWidget {
   final StockRepository stockRepository;
@@ -28,104 +31,99 @@ class AddStockPageState extends State<AddStockPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              TextFormField(
-                controller: _itemNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nom du consommable',
-                  border: OutlineInputBorder(),
+        child: BlocBuilder<KermesseBloc, KermesseState>(
+          builder: (context, kermesseState) {
+            // Vérifier si une kermesse est sélectionnée
+            if (kermesseState is KermesseSelected) {
+              return Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    _buildTextInputField(_itemNameController, 'Nom du consommable'),
+                    const SizedBox(height: 16.0),
+                    _buildTextInputField(_quantityController, 'Quantité', isNumeric: true),
+                    const SizedBox(height: 16.0),
+                    _buildTextInputField(_priceController, 'Prix', isNumeric: true),
+                    const SizedBox(height: 16.0),
+                    _buildDropdown(),
+                    const SizedBox(height: 30.0),
+                    Center(
+                      child: _isLoading
+                          ? const CircularProgressIndicator()
+                          : ElevatedButton(
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            _saveStock(kermesseState.kermesseId);
+                          }
+                        },
+                        child: const Text('Enregistrer le consommable'),
+                      ),
+                    ),
+                  ],
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez entrer le nom du consommable';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16.0),
-              TextFormField(
-                controller: _quantityController,
-                decoration: const InputDecoration(
-                  labelText: 'Quantité',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty || int.tryParse(value) == null) {
-                    return 'Veuillez entrer une quantité valide';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16.0),
-              TextFormField(
-                controller: _priceController,
-                decoration: const InputDecoration(
-                  labelText: 'Prix',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty || int.tryParse(value) == null) {
-                    return 'Veuillez entrer un prix valide';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16.0),
-              DropdownButtonFormField<String>(
-                value: _selectedType,
-                decoration: const InputDecoration(
-                  labelText: 'Type (Boisson ou Nourriture)',
-                  border: OutlineInputBorder(),
-                ),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'Boisson',
-                    child: Text('Boisson'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'Nourriture',
-                    child: Text('Nourriture'),
-                  ),
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    _selectedType = value;
-                  });
-                },
-                validator: (value) {
-                  if (value == null) {
-                    return 'Veuillez sélectionner un type';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 30.0),
-              Center(
-                child: _isLoading
-                    ? const CircularProgressIndicator()
-                    : ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      _saveStock();
-                    }
-                  },
-                  child: const Text('Enregistrer le consommable'),
-                ),
-              ),
-            ],
-          ),
+              );
+            } else {
+              return const Center(child: Text('Veuillez sélectionner une kermesse avant de continuer.'));
+            }
+          },
         ),
       ),
     );
   }
 
-  void _saveStock() async {
+  Widget _buildTextInputField(TextEditingController controller, String label, {bool isNumeric = false}) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+      ),
+      keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Veuillez entrer $label';
+        }
+        if (isNumeric && int.tryParse(value) == null) {
+          return 'Veuillez entrer un nombre valide';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildDropdown() {
+    return DropdownButtonFormField<String>(
+      value: _selectedType,
+      decoration: const InputDecoration(
+        labelText: 'Type (Boisson ou Nourriture)',
+        border: OutlineInputBorder(),
+      ),
+      items: const [
+        DropdownMenuItem(
+          value: 'Boisson',
+          child: Text('Boisson'),
+        ),
+        DropdownMenuItem(
+          value: 'Nourriture',
+          child: Text('Nourriture'),
+        ),
+      ],
+      onChanged: (value) {
+        setState(() {
+          _selectedType = value;
+        });
+      },
+      validator: (value) {
+        if (value == null) {
+          return 'Veuillez sélectionner un type';
+        }
+        return null;
+      },
+    );
+  }
+
+  void _saveStock(int kermesseId) async {
     final itemName = _itemNameController.text;
     final quantity = int.tryParse(_quantityController.text);
     final price = int.tryParse(_priceController.text);
@@ -149,10 +147,10 @@ class AddStockPageState extends State<AddStockPage> {
         quantity: quantity,
         price: price,
         type: type,
-        boothHolderId: 0,
+        boothHolderId: 0, // Assurez-vous d'envoyer l'utilisateur approprié ici
       );
 
-      final createdStock = await widget.stockRepository.createStock(newStock);
+      final createdStock = await widget.stockRepository.createStock(newStock, kermesseId);
 
       if (createdStock != null) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -34,23 +34,31 @@ func CreateStock(c *gin.Context) {
 		return
 	}
 
-	var req models.Stock
+	var req struct {
+		ItemName   string `json:"item_name" binding:"required"`
+		Type       string `json:"type" binding:"required"`
+		Quantity   int    `json:"quantity" binding:"required"`
+		Price      int    `json:"price" binding:"required"`
+		KermesseID uint   `json:"kermesse_id" binding:"required"`
+	}
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if req.Type != models.Beverage && req.Type != models.Food {
+	if models.StockType(req.Type) != models.Beverage && models.StockType(req.Type) != models.Food {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Type invalide. Choisissez 'Boisson' ou 'Nourriture'"})
 		return
 	}
 
 	newStock := models.Stock{
-		ItemName: req.ItemName,
-		Type:     req.Type,
-		Quantity: req.Quantity,
-		Price:    req.Price,
-		UserID:   user.ID,
+		ItemName:   req.ItemName,
+		Type:       models.StockType(req.Type),
+		Quantity:   req.Quantity,
+		Price:      req.Price,
+		UserID:     user.ID,
+		KermesseID: req.KermesseID,
 	}
 
 	if err := database.DB.Create(&newStock).Error; err != nil {

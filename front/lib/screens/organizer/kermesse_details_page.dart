@@ -14,16 +14,16 @@ class KermesseDetailsPage extends StatefulWidget {
   const KermesseDetailsPage({super.key, required this.kermesse});
 
   @override
-  _KermesseDetailsPageState createState() => _KermesseDetailsPageState();
+  KermesseDetailsPageState createState() => KermesseDetailsPageState();
 }
 
-class _KermesseDetailsPageState extends State<KermesseDetailsPage> {
+class KermesseDetailsPageState extends State<KermesseDetailsPage> {
   int _selectedIndex = 0;
 
   List<Widget> get _widgetOptions {
     return [
       const ViewStandsPage(),
-      const ViewGlobalRevenuePage(),
+      ViewGlobalRevenuePage(kermesseId: widget.kermesse.id),
       const ChatPage(),
       TombolaManagementPage(kermesseId: widget.kermesse.id),
       const PointsRankingPage(),

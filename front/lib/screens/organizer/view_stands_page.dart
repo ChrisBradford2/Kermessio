@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ViewStandsPage extends StatelessWidget {
-  const ViewStandsPage({Key? key}) : super(key: key);
+  const ViewStandsPage({super.key});
 
   @override
   Widget build(BuildContext context) {

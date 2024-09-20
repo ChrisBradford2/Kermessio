@@ -4,10 +4,10 @@ class CreateKermessePage extends StatefulWidget {
   const CreateKermessePage({super.key});
 
   @override
-  _CreateKermessePageState createState() => _CreateKermessePageState();
+  CreateKermessePageState createState() => CreateKermessePageState();
 }
 
-class _CreateKermessePageState extends State<CreateKermessePage> {
+class CreateKermessePageState extends State<CreateKermessePage> {
   final TextEditingController _kermesseNameController = TextEditingController();
 
   Future<void> _createKermesse() async {

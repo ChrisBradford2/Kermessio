@@ -30,9 +30,13 @@ class HomePage extends StatelessWidget {
           return BlocListener<KermesseBloc, KermesseState>(
             listener: (context, state) {
               if (state is KermesseInitial) {
-                print("Kermesse non sélectionnée, redirection vers SelectKermessePage");
+                if (kDebugMode) {
+                  print("Kermesse non sélectionnée, redirection vers SelectKermessePage");
+                }
               } else if (state is KermesseSelected) {
-                print("Kermesse sélectionnée: ${state.kermesseId}");
+                if (kDebugMode) {
+                  print("Kermesse sélectionnée: ${state.kermesseId}");
+                }
               }
             },
             child: BlocBuilder<KermesseBloc, KermesseState>(

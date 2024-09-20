@@ -9,10 +9,10 @@ class ChildView extends StatefulWidget {
   final StockRepository stockRepository;
 
   const ChildView({
-    Key? key,
+    super.key,
     required this.user,
     required this.stockRepository,
-  }) : super(key: key);
+  });
 
   @override
   ChildViewState createState() => ChildViewState();

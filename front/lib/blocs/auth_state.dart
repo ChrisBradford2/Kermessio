@@ -15,8 +15,7 @@ class AuthAuthenticated extends AuthState {
   final User user;
   final String token;
 
-  AuthAuthenticated({required this.user, required this.token})
-      : assert(token != null, "Le token ne peut pas être nul");
+  AuthAuthenticated({required this.user, required this.token});
 
   @override
   List<Object> get props => [user, token];

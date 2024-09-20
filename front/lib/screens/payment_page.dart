@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import '../services/stripe_service.dart';
+import '../blocs/kermesse_bloc.dart';
+import '../blocs/kermesse_state.dart';
 
 class PaymentPage extends StatelessWidget {
   const PaymentPage({super.key});
@@ -15,30 +18,40 @@ class PaymentPage extends StatelessWidget {
         child: ElevatedButton(
           onPressed: () async {
             try {
-              // Créer un PaymentIntent via le backend
-              final clientSecret = await StripeService.createPaymentIntent(1000, 'usd');  // Exemple : 1000 centimes = 10 USD
+              // Obtenir l'ID de la kermesse depuis le KermesseBloc
+              final kermesseState = BlocProvider.of<KermesseBloc>(context).state;
+              if (kermesseState is KermesseSelected) {
+                final int kermesseId = kermesseState.kermesseId;
 
-              // Initialiser Stripe avec le client secret
-              await Stripe.instance.initPaymentSheet(
-                paymentSheetParameters: SetupPaymentSheetParameters(
-                  paymentIntentClientSecret: clientSecret,
-                  applePay: const PaymentSheetApplePay(
-                    merchantCountryCode: 'FR',
+                // Créer un PaymentIntent via le backend en passant l'ID de la kermesse
+                final clientSecret = await StripeService.createPaymentIntent(1000, 'eur', kermesseId);
+
+                // Initialiser Stripe avec le client secret
+                await Stripe.instance.initPaymentSheet(
+                  paymentSheetParameters: SetupPaymentSheetParameters(
+                    paymentIntentClientSecret: clientSecret,
+                    applePay: const PaymentSheetApplePay(
+                      merchantCountryCode: 'FR',
+                    ),
+                    googlePay: const PaymentSheetGooglePay(
+                      merchantCountryCode: 'FR',
+                      testEnv: true,
+                    ),
+                    style: ThemeMode.dark,
+                    merchantDisplayName: 'Kermessio',
                   ),
-                  googlePay: const PaymentSheetGooglePay(
-                    merchantCountryCode: 'FR',
-                    testEnv: true,
-                  ),
-                  style: ThemeMode.dark,
-                  merchantDisplayName: 'Kermessio',
-                ),
-              );
+                );
 
-              await Stripe.instance.presentPaymentSheet();
+                await Stripe.instance.presentPaymentSheet();
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Paiement réussi !')),
-              );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Paiement réussi !')),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Aucune kermesse sélectionnée')),
+                );
+              }
             } catch (e) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Erreur lors du paiement : $e')),

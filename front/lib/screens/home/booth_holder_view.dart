@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../config/app_config.dart';
@@ -20,10 +21,10 @@ class BoothHolderView extends StatefulWidget {
   const BoothHolderView({super.key, required this.user});
 
   @override
-  _BoothHolderViewState createState() => _BoothHolderViewState();
+  BoothHolderViewState createState() => BoothHolderViewState();
 }
 
-class _BoothHolderViewState extends State<BoothHolderView> {
+class BoothHolderViewState extends State<BoothHolderView> {
   List<Activity> activities = [];
   List<Stock> stocks = [];
   bool isLoading = true;
@@ -47,21 +48,29 @@ class _BoothHolderViewState extends State<BoothHolderView> {
       );
 
       try {
-        print('Fetching data');
-        print('Fetching activities');
+        if (kDebugMode) {
+          print('Fetching data');
+          print('Fetching activities');
+        }
         final fetchedActivities = await activityRepository.fetchActivities();
-        print('Fetching stocks');
+        if (kDebugMode) {
+          print('Fetching stocks');
+        }
         final fetchedStocks = await stockRepository.fetchStocks();
         setState(() {
           activities = fetchedActivities;
           stocks = fetchedStocks;
           isLoading = false;
         });
-        print('Data fetched');
-        print('Activities: $activities');
-        print('Stocks: $stocks');
+        if (kDebugMode) {
+          print('Data fetched');
+          print('Activities: $activities');
+          print('Stocks: $stocks');
+        }
       } catch (e) {
-        print('Error: $e');
+        if (kDebugMode) {
+          print('Error: $e');
+        }
         setState(() {
           isLoading = false;
         });

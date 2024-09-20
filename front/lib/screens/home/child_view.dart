@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:front/repositories/tombola_repository.dart';
@@ -48,7 +49,9 @@ class ChildViewState extends State<ChildView> {
         setState(() {
           isLoading = false;
         });
-        print('Error fetching purchases: $e');
+        if (kDebugMode) {
+          print('Error fetching purchases: $e');
+        }
       }
     }
   }

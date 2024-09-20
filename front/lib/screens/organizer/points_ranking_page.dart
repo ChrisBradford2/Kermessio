@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class PointsRankingPage extends StatelessWidget {
-  const PointsRankingPage({Key? key}) : super(key: key);
+  const PointsRankingPage({super.key});
 
   @override
   Widget build(BuildContext context) {

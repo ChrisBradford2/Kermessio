@@ -72,6 +72,9 @@ func main() {
 	if err := database.DB.AutoMigrate(&models.Interaction{}); err != nil {
 		log.Fatal("Failed to migrate interactions: ", err)
 	}
+	if err := database.DB.AutoMigrate(&models.Transaction{}); err != nil {
+		log.Fatal("Failed to migrate transactions: ", err)
+	}
 	log.Println("Database migrated!")
 
 	if os.Getenv("GO_ENV") == "production" {

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:front/config/app_config.dart';
 import '../../models/kermesse_model.dart';
@@ -12,10 +13,10 @@ class OrganizerView extends StatefulWidget {
   const OrganizerView({super.key, required this.token});
 
   @override
-  _OrganizerViewState createState() => _OrganizerViewState();
+  OrganizerViewState createState() => OrganizerViewState();
 }
 
-class _OrganizerViewState extends State<OrganizerView> {
+class OrganizerViewState extends State<OrganizerView> {
   late KermesseRepository _kermesseRepository;
   List<Kermesse> _kermesses = [];
   bool _isLoading = true;
@@ -38,7 +39,9 @@ class _OrganizerViewState extends State<OrganizerView> {
         _isLoading = false;
       });
     } catch (e) {
-      print('Erreur lors du chargement des kermesses: $e');
+      if (kDebugMode) {
+        print('Erreur lors du chargement des kermesses: $e');
+      }
       setState(() {
         _isLoading = false;
       });

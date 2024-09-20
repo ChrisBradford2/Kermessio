@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class InteractiveMapPage extends StatelessWidget {
-  const InteractiveMapPage({Key? key}) : super(key: key);
+  const InteractiveMapPage({super.key});
 
   @override
   Widget build(BuildContext context) {

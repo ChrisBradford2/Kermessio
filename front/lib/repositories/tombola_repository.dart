@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -30,8 +31,10 @@ class TombolaRepository {
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      print(
+      if (kDebugMode) {
+        print(
           'Erreur lors de l\'achat du ticket de tombola : ${response.statusCode} - ${response.body}');
+      }
       throw Exception(
           'Erreur lors de l\'achat du ticket de tombola : ${response.body}');
     }
@@ -56,11 +59,15 @@ class TombolaRepository {
         final data = jsonDecode(response.body);
         return data['has_ticket'] as bool;
       } else {
-        print('Erreur lors de la vérification du ticket: ${response.body}');
+        if (kDebugMode) {
+          print('Erreur lors de la vérification du ticket: ${response.body}');
+        }
         return false;
       }
     } catch (e) {
-      print('Erreur lors de la requête : $e');
+      if (kDebugMode) {
+        print('Erreur lors de la requête : $e');
+      }
       return false;
     }
   }

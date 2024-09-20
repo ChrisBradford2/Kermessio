@@ -13,10 +13,10 @@ class TombolaManagementPage extends StatefulWidget {
   const TombolaManagementPage({super.key, required this.kermesseId});
 
   @override
-  _TombolaManagementPageState createState() => _TombolaManagementPageState();
+  TombolaManagementPageState createState() => TombolaManagementPageState();
 }
 
-class _TombolaManagementPageState extends State<TombolaManagementPage> {
+class TombolaManagementPageState extends State<TombolaManagementPage> {
   bool _isLoading = true;
   Map<String, dynamic>? _tombolaData;
   String _errorMessage = '';
@@ -104,7 +104,7 @@ class _TombolaManagementPageState extends State<TombolaManagementPage> {
           });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Erreur : ${_errorMessage}'),
+              content: Text('Erreur : $_errorMessage'),
               backgroundColor: Colors.red,
             ),
           );

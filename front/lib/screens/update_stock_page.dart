@@ -13,10 +13,10 @@ class UpdateStockPage extends StatefulWidget {
   const UpdateStockPage({super.key, required this.stock});
 
   @override
-  _UpdateStockPageState createState() => _UpdateStockPageState();
+  UpdateStockPageState createState() => UpdateStockPageState();
 }
 
-class _UpdateStockPageState extends State<UpdateStockPage> {
+class UpdateStockPageState extends State<UpdateStockPage> {
   final TextEditingController _quantityController = TextEditingController();
   String? _message;
 

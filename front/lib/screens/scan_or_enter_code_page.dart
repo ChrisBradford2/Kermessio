@@ -12,10 +12,10 @@ class ScanAndValidateOrderPage extends StatefulWidget {
   const ScanAndValidateOrderPage({super.key});
 
   @override
-  _ScanAndValidateOrderPageState createState() => _ScanAndValidateOrderPageState();
+  ScanAndValidateOrderPageState createState() => ScanAndValidateOrderPageState();
 }
 
-class _ScanAndValidateOrderPageState extends State<ScanAndValidateOrderPage> {
+class ScanAndValidateOrderPageState extends State<ScanAndValidateOrderPage> {
   final TextEditingController _codeController = TextEditingController();
   String? _message;
   Map<String, dynamic>? _orderData;
@@ -64,15 +64,17 @@ class _ScanAndValidateOrderPageState extends State<ScanAndValidateOrderPage> {
 
         if (response.statusCode == 200) {
           final orderData = jsonDecode(response.body);
-          print (orderData);
+          if (kDebugMode) {
+            print (orderData);
+          }
           setState(() {
             _orderData = orderData;
-            _message = null;  // Réinitialiser le message d'erreur
+            _message = null;
           });
         } else {
           setState(() {
             _message = 'Code invalide';
-            _orderData = null;  // Réinitialiser la commande
+            _orderData = null;
           });
         }
       } else {

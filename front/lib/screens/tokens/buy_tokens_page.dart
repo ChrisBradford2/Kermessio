@@ -9,6 +9,8 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 import '../../blocs/auth_bloc.dart';
 import '../../blocs/auth_event.dart';
 import '../../blocs/auth_state.dart';
+import '../../blocs/kermesse_bloc.dart';
+import '../../blocs/kermesse_state.dart';
 import '../../config/app_config.dart';
 
 class BuyTokensPage extends StatefulWidget {
@@ -67,13 +69,14 @@ class BuyTokensPageState extends State<BuyTokensPage> {
     );
   }
 
-  // Fonction pour initier le paiement en appelant l'API backend
   Future<void> _initiatePayment(BuildContext context, int amount) async {
     setState(() {
       _isLoading = true;
     });
 
     final authState = context.read<AuthBloc>().state;
+    final kermesseState = context.read<KermesseBloc>().state;
+
     if (authState is! AuthAuthenticated) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vous devez être authentifié pour acheter des tokens')),
@@ -81,19 +84,28 @@ class BuyTokensPageState extends State<BuyTokensPage> {
       return;
     }
 
+    if (kermesseState is! KermesseSelected) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez sélectionner une kermesse')),
+      );
+      return;
+    }
+
     final String token = authState.token;
+    final int kermesseId = kermesseState.kermesseId;
 
     try {
       final baseUrl = AppConfig().baseUrl;
       final response = await http.post(
-        Uri.parse('$baseUrl/payments/create-payment-intent'),
+        Uri.parse('$baseUrl/create-payment-intent'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
         body: json.encode({
-          'amount': amount, // En centimes (Stripe fonctionne en centimes)
+          'amount': amount,
           'currency': 'eur',
+          'kermesseId': kermesseId,
         }),
       );
 
@@ -105,12 +117,14 @@ class BuyTokensPageState extends State<BuyTokensPage> {
 
       if (response.statusCode == 200 && jsonResponse['clientSecret'] != null) {
         final clientSecret = jsonResponse['clientSecret'];
-
         await _confirmPayment(context, clientSecret);
       } else {
         throw Exception('Failed to create payment intent');
       }
     } catch (e) {
+      if (kDebugMode) {
+        print('Error: $e');
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur lors du paiement : $e')),
       );
@@ -121,7 +135,6 @@ class BuyTokensPageState extends State<BuyTokensPage> {
     }
   }
 
-  // Confirmer le paiement et rediriger vers la page d'accueil
   Future<void> _confirmPayment(BuildContext context, String clientSecret) async {
     try {
       await Stripe.instance.initPaymentSheet(paymentSheetParameters: SetupPaymentSheetParameters(
@@ -130,18 +143,14 @@ class BuyTokensPageState extends State<BuyTokensPage> {
         merchantDisplayName: 'Kermessio',
       ));
 
-      // Afficher le PaymentSheet
       await Stripe.instance.presentPaymentSheet();
 
-      // Paiement réussi, afficher un message de succès
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Paiement réussi ! Vos jetons ont été ajoutés.')),
       );
 
-      // Rediriger vers la page d'accueil après le paiement
       Navigator.pushReplacementNamed(context, '/home');
 
-      // Mettre à jour les tokens après le paiement en déclenchant un événement
       context.read<AuthBloc>().add(AuthRefreshRequested()); // Déclencher la mise à jour des tokens
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

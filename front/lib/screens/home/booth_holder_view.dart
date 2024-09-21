@@ -1,6 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:front/screens/booth_holder_chat_list_page.dart';
+import '../../blocs/auth_bloc.dart';
+import '../../blocs/auth_state.dart';
 import '../../config/app_config.dart';
 import '../../models/activity_model.dart';
 import '../../models/stock_model.dart';
@@ -9,8 +11,6 @@ import '../../repositories/activity_repository.dart';
 import '../../repositories/stock_repository.dart';
 import '../activity_details_page.dart';
 import '../add_activity_page.dart';
-import '../../blocs/auth_bloc.dart';
-import '../../blocs/auth_state.dart';
 import '../add_stock_page.dart';
 import '../scan_or_enter_code_page.dart';
 import '../update_stock_page.dart';
@@ -48,29 +48,14 @@ class BoothHolderViewState extends State<BoothHolderView> {
       );
 
       try {
-        if (kDebugMode) {
-          print('Fetching data');
-          print('Fetching activities');
-        }
         final fetchedActivities = await activityRepository.fetchActivities();
-        if (kDebugMode) {
-          print('Fetching stocks');
-        }
         final fetchedStocks = await stockRepository.fetchStocks();
         setState(() {
           activities = fetchedActivities;
           stocks = fetchedStocks;
           isLoading = false;
         });
-        if (kDebugMode) {
-          print('Data fetched');
-          print('Activities: $activities');
-          print('Stocks: $stocks');
-        }
       } catch (e) {
-        if (kDebugMode) {
-          print('Error: $e');
-        }
         setState(() {
           isLoading = false;
         });
@@ -78,7 +63,6 @@ class BoothHolderViewState extends State<BoothHolderView> {
     }
   }
 
-  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,76 +82,7 @@ class BoothHolderViewState extends State<BoothHolderView> {
               Expanded(
                 child: Column(
                   children: [
-                    BlocBuilder<AuthBloc, AuthState>(
-                      builder: (context, authState) {
-                        if (authState is AuthAuthenticated) {
-                          final activityRepository = ActivityRepository(
-                            baseUrl: AppConfig().baseUrl,
-                            token: authState.token,
-                          );
-                          final stockRepository = StockRepository(
-                            baseUrl: AppConfig().baseUrl,
-                            token: authState.token,
-                          );
-
-                          return Column(
-                            children: [
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => AddActivityPage(
-                                        activityRepository: activityRepository,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: const Text("Ajouter une activité"),
-                              ),
-                              const SizedBox(height: 20),
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => AddStockPage(
-                                        stockRepository: stockRepository,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: const Text("Ajouter un consommable"),
-                              ),
-                              const SizedBox(height: 20),
-
-                              // Nouveau bouton pour scanner ou entrer un code
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const ScanAndValidateOrderPage(),
-                                    ),
-                                  ).then((result) {
-                                    if (result != null) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text(result)),
-                                      );
-                                    }
-                                  });
-                                },
-                                child: const Text("Scanner ou entrer un code"),
-                              ),
-                            ],
-                          );
-                        } else {
-                          return const Center(
-                            child: Text('Vous devez être authentifié pour ajouter une activité ou un consommable'),
-                          );
-                        }
-                      },
-                    ),
+                    _buildActionGrid(),
                     const SizedBox(height: 20),
                     _buildActivityList(),
                     const SizedBox(height: 20),
@@ -175,6 +90,111 @@ class BoothHolderViewState extends State<BoothHolderView> {
                   ],
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionGrid() {
+    final authState = context.read<AuthBloc>().state;
+
+    if (authState is AuthAuthenticated) {
+      final token = authState.token;
+
+      return GridView.count(
+        crossAxisCount: 2, // Nombre de carrés par ligne
+        shrinkWrap: true,
+        mainAxisSpacing: 5, // Espace entre les carrés verticalement
+        crossAxisSpacing: 5, // Espace entre les carrés horizontalement
+        childAspectRatio: 2, // Ajuste le ratio largeur/hauteur des carrés
+        children: [
+          _buildActionTile(
+            icon: Icons.add_circle_outline,
+            label: 'Ajouter une activité',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddActivityPage(
+                    activityRepository: ActivityRepository(
+                      baseUrl: AppConfig().baseUrl,
+                      token: token,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          _buildActionTile(
+            icon: Icons.fastfood,
+            label: 'Ajouter un consommable',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddStockPage(
+                    stockRepository: StockRepository(
+                      baseUrl: AppConfig().baseUrl,
+                      token: token,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          _buildActionTile(
+            icon: Icons.qr_code_scanner,
+            label: 'Scanner un code',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ScanAndValidateOrderPage(),
+                ),
+              );
+            },
+          ),
+          _buildActionTile(
+            icon: Icons.message,
+            label: 'Chatter avec l\'organisateur',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const BoothHolderChatListPage(),
+                ),
+              );
+            },
+          ),
+        ],
+      );
+    } else {
+      return const Center(
+        child: Text('Vous devez être authentifié pour accéder à ces actions.'),
+      );
+    }
+  }
+
+  Widget _buildActionTile({required IconData icon, required String label, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.blue.shade100,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 30), // Taille de l'icône réduite
+            const SizedBox(height: 10),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12), // Taille du texte réduite
+            ),
           ],
         ),
       ),
@@ -258,7 +278,6 @@ class BoothHolderViewState extends State<BoothHolderView> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(result)),
                         );
-                        // Recharger les stocks après la mise à jour
                         _fetchData();
                       }
                     });

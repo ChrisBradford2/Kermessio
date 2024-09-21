@@ -5,6 +5,7 @@ import (
 	"kermessio/database"
 	"kermessio/models"
 	"net/http"
+	"strconv"
 )
 
 func GetUserDetails(c *gin.Context) {
@@ -47,5 +48,28 @@ func GetStands(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"stands": boothHolders,
+	})
+}
+
+func GetOrganizersByKermesseID(c *gin.Context) {
+	kermesseID, err := strconv.Atoi(c.Param("kermesseId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid kermesse ID"})
+		return
+	}
+
+	var organizers []models.User
+	if err := database.DB.
+		Table("users").
+		Select("users.id, users.username").
+		Joins("JOIN kermesse_organizers ON users.id = kermesse_organizers.user_id").
+		Where("kermesse_organizers.kermesse_id = ?", kermesseID).
+		Find(&organizers).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des organisateurs"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"organizers": organizers,
 	})
 }

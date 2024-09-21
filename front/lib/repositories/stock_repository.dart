@@ -50,6 +50,9 @@ class StockRepository {
     if (response.statusCode == 200) {
       final responseBody = jsonDecode(response.body);
       List<dynamic> data = responseBody['data'];
+      if (kDebugMode) {
+        print("Stocks: $data");
+      }
       return data.map((stockJson) => Stock.fromJson(stockJson)).toList();
     } else {
       if (kDebugMode) {

@@ -4,6 +4,7 @@ import (
 	"kermessio/config"
 	"kermessio/database"
 	"kermessio/docs"
+	middleware "kermessio/middlewares"
 	"kermessio/models"
 	"kermessio/routes"
 	"log"
@@ -75,6 +76,9 @@ func main() {
 	if err := database.DB.AutoMigrate(&models.Transaction{}); err != nil {
 		log.Fatal("Failed to migrate transactions: ", err)
 	}
+	if err := database.DB.AutoMigrate(&models.ChatMessage{}); err != nil {
+		log.Fatal("Failed to migrate chats: ", err)
+	}
 	log.Println("Database migrated!")
 
 	if os.Getenv("GO_ENV") == "production" {
@@ -113,6 +117,9 @@ func main() {
 	routes.PurchaseRoutes(r)
 	routes.KermesseRoutes(r)
 	routes.TombolaRoutes(r)
+	routes.ChatMessageRoutes(r)
+
+	go middleware.HandleMessages()
 
 	// Swagger documentation
 	docs.SwaggerInfo.Title = "Kermessio API"

@@ -11,6 +11,7 @@ func UserRoutes(r *gin.Engine) {
 	protected.Use(middleware.AuthMiddleware())
 	{
 		protected.GET("/me", controllers.GetUserDetails)
+		protected.GET("/:kermesseId/organizers", controllers.GetOrganizersByKermesseID)
 		protected.POST("/child", controllers.CreateChild)
 		protected.GET("/child", controllers.GetChildren)
 		protected.POST("/child/:childId/tokens", controllers.AssignTokensToChild)

@@ -25,7 +25,7 @@ class Stock {
       quantity: json['quantity'],
       price: json['price'],
       type: json['type'],
-      boothHolderId: json['user_id'],
+      boothHolderId: json['booth_holder_id'],
       boothHolderUsername: json['booth_holder_username'],
     );
   }
@@ -38,7 +38,7 @@ class Stock {
       'quantity': quantity,
       'price': price,
       'type': type,
-      'user_id': boothHolderId,
+      'booth_holder_id': boothHolderId,
     };
   }
 }

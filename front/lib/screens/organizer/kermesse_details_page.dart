@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:front/config/app_config.dart';
 import 'package:front/screens/organizer/points_ranking_page.dart';
 import 'package:front/screens/organizer/tombola_management_page.dart';
 import 'package:front/screens/organizer/view_global_revenue_page.dart';
 import 'package:front/screens/organizer/view_stands_page.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../models/kermesse_model.dart';
-import 'chat_page.dart';
+import 'chat_list_page.dart';
+import '../chat_details_page.dart';
 import 'interactive_map_page.dart';
 
 class KermesseDetailsPage extends StatefulWidget {
@@ -24,7 +27,7 @@ class KermesseDetailsPageState extends State<KermesseDetailsPage> {
     return [
       const ViewStandsPage(),
       ViewGlobalRevenuePage(kermesseId: widget.kermesse.id),
-      const ChatPage(),
+      const ChatListPage(),
       TombolaManagementPage(kermesseId: widget.kermesse.id),
       const PointsRankingPage(),
       const InteractiveMapPage(),

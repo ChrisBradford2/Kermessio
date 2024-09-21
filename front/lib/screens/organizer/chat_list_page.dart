@@ -96,17 +96,20 @@ class ChatListPageState extends State<ChatListPage> {
         itemCount: _conversations.length,
         itemBuilder: (context, index) {
           final conversation = _conversations[index];
+          if (kDebugMode) {
+            print(conversation);
+          }
           return Card(
             child: ListTile(
-              title: Text(conversation['booth_holder_username'] ?? 'Inconnu'),
+              title: Text(conversation['username'] ?? 'Inconnu'),
               subtitle: Text(conversation['last_message'] ?? 'Pas de message'),
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ChatDetailsPage(
-                      boothHolderId: conversation['booth_holder_id'],
-                      boothHolderUsername: conversation['booth_holder_username'] ?? 'Inconnu',
+                      boothHolderId: conversation['user_id'],
+                      boothHolderUsername: conversation['username'] ?? 'Inconnu',
                     ),
                   ),
                 );

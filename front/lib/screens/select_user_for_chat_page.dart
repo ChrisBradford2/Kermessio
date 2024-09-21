@@ -35,7 +35,6 @@ class SelectUserForChatPageState extends State<SelectUserForChatPage> {
     if (authState is AuthAuthenticated) {
       final token = authState.token;
 
-      // URL en fonction du rôle (organisateur ou teneur de stand)
       final url = widget.isOrganizer
           ? '${AppConfig().baseUrl}/user/organizer/stands'
           : '${AppConfig().baseUrl}/user/$kermesseId/organizers';

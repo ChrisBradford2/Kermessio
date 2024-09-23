@@ -4,10 +4,10 @@ class JoinKermessePage extends StatefulWidget {
   const JoinKermessePage({super.key});
 
   @override
-  _JoinKermessePageState createState() => _JoinKermessePageState();
+  JoinKermessePageState createState() => JoinKermessePageState();
 }
 
-class _JoinKermessePageState extends State<JoinKermessePage> {
+class JoinKermessePageState extends State<JoinKermessePage> {
   final TextEditingController _codeController = TextEditingController();
 
   Future<void> _joinKermesse() async {

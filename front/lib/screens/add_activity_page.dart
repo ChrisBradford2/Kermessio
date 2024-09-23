@@ -155,6 +155,7 @@ class AddActivityPageState extends State<AddActivityPage> {
 
     try {
       final createdActivity = await widget.activityRepository.createActivity(activity);
+      if (!mounted) return;
 
       if (createdActivity != null) {
         ScaffoldMessenger.of(context).showSnackBar(

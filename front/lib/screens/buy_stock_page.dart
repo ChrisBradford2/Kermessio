@@ -27,6 +27,7 @@ class BuyStockPageState extends State<BuyStockPage> {
   void _fetchAvailableStocks() async {
     try {
       final stocks = await widget.stockRepository.fetchAllStocks();
+      if (!mounted) return;
       setState(() {
         availableStocks = stocks;
         isLoading = false;
@@ -45,6 +46,7 @@ class BuyStockPageState extends State<BuyStockPage> {
   void _buyStock(Stock stock) async {
     try {
       final success = await widget.stockRepository.buyStock(stock.id, stock.boothHolderId);
+      if (!mounted) return;
       if (success) {
         setState(() {
           widget.user.tokens -= stock.price;

@@ -39,8 +39,10 @@ class AuthRepository {
   }
 
   Future<String> register(String username, String email, String password, String role) async {
-    print('Tentative d\'inscription avec :');
-    print('Username: $username, Email: $email, Password: $password, Role: $role');
+    if (kDebugMode) {
+      print('Tentative d\'inscription avec :');
+      print('Username: $username, Email: $email, Password: $password, Role: $role');
+    }
 
     final response = await http.post(
       Uri.parse('$baseUrl/user/register'),
@@ -55,15 +57,21 @@ class AuthRepository {
       }),
     );
 
-    print('Réponse de l\'API: ${response.statusCode}');
-    print('Corps de la réponse: ${response.body}');
+    if (kDebugMode) {
+      print('Réponse de l\'API: ${response.statusCode}');
+      print('Corps de la réponse: ${response.body}');
+    }
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      print('Inscription réussie avec message: ${data['message']}');
+      if (kDebugMode) {
+        print('Inscription réussie avec message: ${data['message']}');
+      }
       return data['message'];
     } else {
-      print('Erreur pendant l\'inscription: ${response.body}');
+      if (kDebugMode) {
+        print('Erreur pendant l\'inscription: ${response.body}');
+      }
       throw Exception("Erreur d'inscription");
     }
   }

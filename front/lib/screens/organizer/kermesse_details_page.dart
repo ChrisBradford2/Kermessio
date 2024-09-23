@@ -5,7 +5,7 @@ import 'package:front/screens/organizer/view_global_revenue_page.dart';
 import 'package:front/screens/organizer/view_stands_page.dart';
 
 import '../../models/kermesse_model.dart';
-import 'chat_page.dart';
+import 'chat_list_page.dart';
 import 'interactive_map_page.dart';
 
 class KermesseDetailsPage extends StatefulWidget {
@@ -14,17 +14,17 @@ class KermesseDetailsPage extends StatefulWidget {
   const KermesseDetailsPage({super.key, required this.kermesse});
 
   @override
-  _KermesseDetailsPageState createState() => _KermesseDetailsPageState();
+  KermesseDetailsPageState createState() => KermesseDetailsPageState();
 }
 
-class _KermesseDetailsPageState extends State<KermesseDetailsPage> {
+class KermesseDetailsPageState extends State<KermesseDetailsPage> {
   int _selectedIndex = 0;
 
   List<Widget> get _widgetOptions {
     return [
       const ViewStandsPage(),
-      const ViewGlobalRevenuePage(),
-      const ChatPage(),
+      ViewGlobalRevenuePage(kermesseId: widget.kermesse.id),
+      const ChatListPage(),
       TombolaManagementPage(kermesseId: widget.kermesse.id),
       const PointsRankingPage(),
       const InteractiveMapPage(),

@@ -8,7 +8,7 @@ class BuyStockButton extends StatelessWidget {
   final StockRepository stockRepository;
   final User user;
 
-  const BuyStockButton({required this.stockRepository, required this.user, Key? key}) : super(key: key);
+  const BuyStockButton({required this.stockRepository, required this.user, super.key});
 
   @override
   Widget build(BuildContext context) {

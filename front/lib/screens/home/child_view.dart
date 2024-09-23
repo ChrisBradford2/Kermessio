@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:front/repositories/tombola_repository.dart';
+import 'package:front/scaffold/custom_scaffold.dart';
 import '../../blocs/auth_bloc.dart';
 import '../../blocs/auth_event.dart';
 import '../../blocs/auth_state.dart';
@@ -48,7 +50,9 @@ class ChildViewState extends State<ChildView> {
         setState(() {
           isLoading = false;
         });
-        print('Error fetching purchases: $e');
+        if (kDebugMode) {
+          print('Error fetching purchases: $e');
+        }
       }
     }
   }
@@ -57,7 +61,6 @@ class ChildViewState extends State<ChildView> {
     final authState = BlocProvider.of<AuthBloc>(context).state;
     final kermesseState = BlocProvider.of<KermesseBloc>(context).state;
 
-    // Vérifiez si kermesseState est de type KermesseSelected avant d'accéder à kermesseId
     if (authState is AuthAuthenticated && kermesseState is KermesseSelected) {
       final tombolaRepository = TombolaRepository(
         baseUrl: AppConfig().baseUrl,
@@ -83,6 +86,7 @@ class ChildViewState extends State<ChildView> {
       if (widget.user.tokens >= 10) {
         try {
           final response = await tombolaRepository.buyTicket(widget.user.id, widget.user.role, kermesseId);
+          if (!mounted) return;
           if (response['success']) {
             BlocProvider.of<AuthBloc>(context).add(AuthRefreshRequested());
             ScaffoldMessenger.of(context).showSnackBar(
@@ -106,8 +110,7 @@ class ChildViewState extends State<ChildView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Espace Enfant")),
+    return CustomScaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

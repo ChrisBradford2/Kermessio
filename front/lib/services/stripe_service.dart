@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 
 class StripeService {
-  static Future<String> createPaymentIntent(int amount, String currency) async {
+  static Future<String> createPaymentIntent(int amount, String currency, int kermesseId) async {
     final String? baseUrl = AppConfig().baseUrl;
     final url = Uri.parse('$baseUrl/create-payment-intent');
     final response = await http.post(

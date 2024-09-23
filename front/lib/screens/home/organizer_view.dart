@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:front/config/app_config.dart';
+import 'package:front/scaffold/custom_scaffold.dart';
 import '../../models/kermesse_model.dart';
 import '../../repositories/kermesse_repository.dart';
 import '../create_kermesse_page.dart';
@@ -12,10 +14,10 @@ class OrganizerView extends StatefulWidget {
   const OrganizerView({super.key, required this.token});
 
   @override
-  _OrganizerViewState createState() => _OrganizerViewState();
+  OrganizerViewState createState() => OrganizerViewState();
 }
 
-class _OrganizerViewState extends State<OrganizerView> {
+class OrganizerViewState extends State<OrganizerView> {
   late KermesseRepository _kermesseRepository;
   List<Kermesse> _kermesses = [];
   bool _isLoading = true;
@@ -33,12 +35,15 @@ class _OrganizerViewState extends State<OrganizerView> {
   Future<void> _fetchKermesses() async {
     try {
       final kermesses = await _kermesseRepository.getKermesses();
+      if (!mounted) return;
       setState(() {
         _kermesses = kermesses;
         _isLoading = false;
       });
     } catch (e) {
-      print('Erreur lors du chargement des kermesses: $e');
+      if (kDebugMode) {
+        print('Erreur lors du chargement des kermesses: $e');
+      }
       setState(() {
         _isLoading = false;
       });
@@ -53,10 +58,7 @@ class _OrganizerViewState extends State<OrganizerView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Vue Organisateur'),
-      ),
+    return CustomScaffold(
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Center(

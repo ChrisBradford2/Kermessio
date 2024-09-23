@@ -11,9 +11,15 @@ func UserRoutes(r *gin.Engine) {
 	protected.Use(middleware.AuthMiddleware())
 	{
 		protected.GET("/me", controllers.GetUserDetails)
+		protected.GET("/:kermesseId/organizers", controllers.GetOrganizersByKermesseID)
 		protected.POST("/child", controllers.CreateChild)
 		protected.GET("/child", controllers.GetChildren)
 		protected.POST("/child/:childId/tokens", controllers.AssignTokensToChild)
 		protected.GET("/child/:childId/interactions", controllers.GetChildInteractions)
+
+		// Route for organizer role
+		protected.GET("/organizer/:kermesseId/revenue", controllers.GetKermesseRevenue)
+		protected.GET("/organizer/stands", controllers.GetStands)
+		protected.GET("/organizer/ranking", controllers.GetPointsRanking)
 	}
 }

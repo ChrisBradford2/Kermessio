@@ -13,23 +13,24 @@ import '../repositories/kermesse_repository.dart';
 import '../repositories/stock_repository.dart';
 import '../widgets/child/child_view_widget.dart';
 import 'home/booth_holder_view.dart';
-import 'home/organizer_view.dart';
 import 'home/parent_view.dart';
 
 class SelectKermessePage extends StatefulWidget {
   const SelectKermessePage({super.key});
 
   @override
-  _SelectKermessePageState createState() => _SelectKermessePageState();
+  SelectKermessePageState createState() => SelectKermessePageState();
 }
 
-class _SelectKermessePageState extends State<SelectKermessePage> {
+class SelectKermessePageState extends State<SelectKermessePage> {
   List<Kermesse> kermesses = [];
   bool isLoading = true;
 
   @override
   void initState() {
-    print("InitState");
+    if (kDebugMode) {
+      print("InitState");
+    }
     super.initState();
     _fetchKermesses();
   }
@@ -37,7 +38,9 @@ class _SelectKermessePageState extends State<SelectKermessePage> {
   Future<void> _fetchKermesses() async {
     final authState = BlocProvider.of<AuthBloc>(context).state;
 
-    print("AuthState: $authState");
+    if (kDebugMode) {
+      print("AuthState: $authState");
+    }
     if (authState is AuthAuthenticated) {
       try {
         final kermesseRepository = KermesseRepository(
@@ -45,6 +48,7 @@ class _SelectKermessePageState extends State<SelectKermessePage> {
           token: authState.token,
         );
         final fetchedKermesses = await kermesseRepository.getKermesses();
+        if (!mounted) return;
         if (kDebugMode) {
           print('Kermesses récupérées: $fetchedKermesses');
         }
@@ -101,7 +105,6 @@ class _SelectKermessePageState extends State<SelectKermessePage> {
                   token: authState.token,
                 );
 
-                // Rediriger vers la vue appropriée selon le rôle de l'utilisateur
                 _navigateToRoleBasedView(authState.user, stockRepository);
               }
             },
@@ -113,21 +116,21 @@ class _SelectKermessePageState extends State<SelectKermessePage> {
 
   void _navigateToRoleBasedView(User user, StockRepository stockRepository) {
     if (user.role == 'parent') {
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => ParentView(user: user),
         ),
       );
     } else if (user.role == 'booth_holder') {
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => BoothHolderView(user: user),
         ),
       );
     } else if (user.role == 'child') {
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => ChildView(

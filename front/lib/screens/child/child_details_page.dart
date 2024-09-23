@@ -103,6 +103,7 @@ class ChildDetailsPageState extends State<ChildDetailsPage> {
         tokens: tokens,
         token: token,
       );
+      if (!mounted) return;
 
       if (success) {
         context.read<AuthBloc>().add(AuthRefreshRequested());
@@ -146,8 +147,6 @@ class ChildDetailsPageState extends State<ChildDetailsPage> {
           },
         );
 
-        print('Response code: ${response.statusCode}');
-        print('Response: ${response.body}');
         if (response.statusCode == 200) {
           setState(() {
             _interactions = json.decode(response.body)['interactions'];

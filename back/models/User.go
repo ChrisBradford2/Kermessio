@@ -13,9 +13,12 @@ type User struct {
 	Parent                 *User      `gorm:"foreignKey:ParentID"` // Relationship to parent
 	Tokens                 int64      `json:"tokens" gorm:"default:0"`
 	Activities             []Activity `json:"activities" gorm:"foreignKey:BoothHolderID"`
+	Stocks                 []Stock    `json:"stocks" gorm:"foreignKey:BoothHolderID"`
 	Purchases              []Purchase `json:"purchases" gorm:"foreignKey:UserID"`
 	KermessesAsOrganizer   []Kermesse `gorm:"many2many:kermesse_organizers;"`
 	KermessesAsParticipant []Kermesse `gorm:"many2many:kermesse_participants;"`
+	PositionX              int        `json:"position_x" gorm:"default:0"`
+	PositionY              int        `json:"position_y" gorm:"default:0"`
 }
 
 type UserRegister struct {

@@ -147,10 +147,11 @@ class AddStockPageState extends State<AddStockPage> {
         quantity: quantity,
         price: price,
         type: type,
-        boothHolderId: 0, // Assurez-vous d'envoyer l'utilisateur approprié ici
+        boothHolderId: 0,
       );
 
       final createdStock = await widget.stockRepository.createStock(newStock, kermesseId);
+      if (!mounted) return;
 
       if (createdStock != null) {
         ScaffoldMessenger.of(context).showSnackBar(

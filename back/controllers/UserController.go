@@ -73,3 +73,14 @@ func GetOrganizersByKermesseID(c *gin.Context) {
 		"organizers": organizers,
 	})
 }
+
+func GetPointsRanking(c *gin.Context) {
+	var users []models.User
+	err := database.DB.Where("role = ?", "child").Order("points desc").Find(&users).Error
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération du classement"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"ranking": users})
+}

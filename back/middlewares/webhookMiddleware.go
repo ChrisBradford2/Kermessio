@@ -10,6 +10,7 @@ import (
 	"kermessio/database"
 	"kermessio/models"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -23,7 +24,7 @@ func HandleWebhook(c *gin.Context) {
 	}
 
 	// Vérifier la signature du webhook
-	endpointSecret := "whsec_12e380112b7d47744bfa721375828e960a85ce31ab38b8cd2b07dad2f1fb725c"
+	endpointSecret := os.Getenv("STRIPE_WEBHOOK_SECRET")
 	event, err := webhook.ConstructEvent(payload, c.GetHeader("Stripe-Signature"), endpointSecret)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid signature"})

@@ -93,6 +93,7 @@ class ActivityDetailsPageState extends State<ActivityDetailsPage> {
 
     try {
       final success = await participationRepository.updateParticipation(participationId, isWinner);
+      if (!mounted) return;
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Points attribués avec succès')),

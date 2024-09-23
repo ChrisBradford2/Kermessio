@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:front/scaffold/custom_scaffold.dart';
 import '../../blocs/auth_bloc.dart';
-import '../../blocs/auth_event.dart';
 import '../../blocs/auth_state.dart';
 import '../../blocs/child_bloc.dart';
 import '../../blocs/child_event.dart';
@@ -24,26 +24,15 @@ class ParentView extends StatelessWidget {
           final childBloc = context.read<ChildBloc>();
           childBloc.add(LoadChildren(parentToken: authState.token));
 
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text("Bienvenue à Kermessio"),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.logout),
-                  onPressed: () {
-                    context.read<AuthBloc>().add(AuthLogoutRequested());
-                  },
-                )
-              ],
-            ),
+          return CustomScaffold(
             body: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  const Text(
-                    "Bienvenue sur Kermessio !",
-                    style: TextStyle(
+                  Text(
+                    "Bienvenue sur Kermessio, ${user.username} !",
+                    style: const TextStyle(
                       fontSize: 24.0,
                       fontWeight: FontWeight.bold,
                     ),
@@ -66,12 +55,20 @@ class ParentView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20.0),
-                  const Text(
-                    "Liste des enfants",
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  BlocBuilder<ChildBloc, ChildState>(
+                    builder: (context, state) {
+                      final childLength = state is ChildLoaded
+                          ? state.children.length
+                          : 0;
+
+                      return Text(
+                        "Liste des enfants ($childLength)",
+                        style: const TextStyle(
+                          fontSize: 20.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 20.0),
                   Expanded(
@@ -91,8 +88,7 @@ class ParentView extends StatelessWidget {
                                 final child = state.children[index];
                                 return ListTile(
                                   title: Text(child.username),
-                                  subtitle:
-                                  Text("Jetons: ${child.tokens}"),
+                                  subtitle: Text("Jetons: ${child.tokens}"),
                                   onTap: () {
                                     Navigator.push(
                                       context,
@@ -143,7 +139,6 @@ class ParentView extends StatelessWidget {
           );
         }
 
-        // Retourner un écran de chargement ou une autre vue si l'utilisateur n'est pas authentifié
         return const Center(child: CircularProgressIndicator());
       },
     );

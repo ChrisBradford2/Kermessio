@@ -42,6 +42,8 @@ class ChatListPageState extends State<ChatListPage> {
           },
         );
 
+        if (!mounted) return;
+
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           setState(() {

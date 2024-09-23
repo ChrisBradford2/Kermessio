@@ -108,6 +108,8 @@ class ScanAndValidateOrderPageState extends State<ScanAndValidateOrderPage> {
             body: jsonEncode({'purchaseId': _orderData!['id']}),
           );
 
+          if (!mounted) return;
+
           if (response.statusCode == 200) {
             Navigator.pop(context, 'Commande validée avec succès');
           } else {

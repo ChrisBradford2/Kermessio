@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:front/screens/select_user_for_chat_page.dart';
@@ -40,6 +41,7 @@ class BoothHolderChatListPageState extends State<BoothHolderChatListPage> {
             'Authorization': 'Bearer $token',
           },
         );
+        if (!mounted) return;
 
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
@@ -89,7 +91,9 @@ class BoothHolderChatListPageState extends State<BoothHolderChatListPage> {
         itemCount: _conversations.length,
         itemBuilder: (context, index) {
           final conversation = _conversations[index];
-          print(conversation);
+          if (kDebugMode) {
+            print("Conversation: $conversation");
+          }
           return Card(
             child: ListTile(
               title: Text(conversation['username'] ?? 'Inconnu'),

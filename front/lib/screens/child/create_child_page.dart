@@ -79,6 +79,7 @@ class CreateChildPageState extends State<CreateChildPage> {
           password: _passwordController.text,
           token: authState.token,  // Parent's token
         );
+        if (!mounted) return;
 
         setState(() {
           _isLoading = false;

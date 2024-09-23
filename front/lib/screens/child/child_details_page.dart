@@ -103,6 +103,7 @@ class ChildDetailsPageState extends State<ChildDetailsPage> {
         tokens: tokens,
         token: token,
       );
+      if (!mounted) return;
 
       if (success) {
         context.read<AuthBloc>().add(AuthRefreshRequested());

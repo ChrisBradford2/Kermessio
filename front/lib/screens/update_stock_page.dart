@@ -46,6 +46,8 @@ class UpdateStockPageState extends State<UpdateStockPage> {
           }),
         );
 
+        if (!mounted) return;
+
         if (response.statusCode == 200) {
           setState(() {
             _message = 'Quantité mise à jour avec succès';

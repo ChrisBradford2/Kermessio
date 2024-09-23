@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
@@ -48,6 +49,8 @@ class ChatDetailsPageState extends State<ChatDetailsPage> {
             'Authorization': 'Bearer $token',
           },
         );
+
+        if (!mounted) return;
 
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
@@ -104,11 +107,15 @@ class ChatDetailsPageState extends State<ChatDetailsPage> {
         }),
       );
 
+      if (!mounted) return;
+
       if (response.statusCode == 200) {
         _messageController.clear();
-        _fetchMessages(); // Actualiser la liste des messages après l'envoi
+        _fetchMessages();
       } else {
-        print('Error sending message: ${response.statusCode} - ${response.body}');
+        if (kDebugMode) {
+          print('Error sending message: ${response.statusCode} - ${response.body}');
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Erreur lors de l\'envoi du message')),
         );

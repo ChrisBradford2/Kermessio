@@ -50,6 +50,7 @@ class ChatDetailsPageState extends State<ChatDetailsPage> {
             'Authorization': 'Bearer $token',
           },
         );
+        if (!mounted) return;
 
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
@@ -108,6 +109,8 @@ class ChatDetailsPageState extends State<ChatDetailsPage> {
           'message': messageText,
         }),
       );
+
+      if (!mounted) return;
 
       if (response.statusCode == 200) {
         _messageController.clear();

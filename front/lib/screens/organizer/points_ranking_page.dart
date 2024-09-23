@@ -38,6 +38,8 @@ class PointsRankingPageState extends State<PointsRankingPage> {
           },
         );
 
+        if (!mounted) return;
+
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           setState(() {

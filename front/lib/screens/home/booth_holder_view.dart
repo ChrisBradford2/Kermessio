@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:front/scaffold/custom_scaffold.dart';
 import 'package:front/screens/booth_holder_chat_list_page.dart';
 import '../../blocs/auth_bloc.dart';
 import '../../blocs/auth_state.dart';
@@ -65,8 +66,7 @@ class BoothHolderViewState extends State<BoothHolderView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Bienvenue à Kermessio - Teneur de stand")),
+    return CustomScaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

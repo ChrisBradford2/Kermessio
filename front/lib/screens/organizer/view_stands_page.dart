@@ -39,6 +39,8 @@ class ViewStandsPageState extends State<ViewStandsPage> {
           },
         );
 
+        if (!mounted) return;
+
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           setState(() {

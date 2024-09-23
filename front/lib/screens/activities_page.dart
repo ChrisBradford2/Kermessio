@@ -34,6 +34,7 @@ class ActivitiesPageState extends State<ActivitiesPage> {
   void _fetchAvailableActivities() async {
     try {
       final activities = await widget.activityRepository.fetchAllActivities();
+      if (!mounted) return;
       setState(() {
         availableActivities = activities;
         isLoading = false;
@@ -52,6 +53,7 @@ class ActivitiesPageState extends State<ActivitiesPage> {
     if (widget.user.tokens >= activity.price) {
       try {
         final success = await widget.participationRepository.participateInActivity(activity.id, widget.user.id);
+        if (!mounted) return;
         if (success) {
           setState(() {
             widget.user.tokens -= activity.price;

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:front/config/app_config.dart';
+import 'package:front/scaffold/custom_scaffold.dart';
 import '../../models/kermesse_model.dart';
 import '../../repositories/kermesse_repository.dart';
 import '../create_kermesse_page.dart';
@@ -34,6 +35,7 @@ class OrganizerViewState extends State<OrganizerView> {
   Future<void> _fetchKermesses() async {
     try {
       final kermesses = await _kermesseRepository.getKermesses();
+      if (!mounted) return;
       setState(() {
         _kermesses = kermesses;
         _isLoading = false;
@@ -56,10 +58,7 @@ class OrganizerViewState extends State<OrganizerView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Vue Organisateur'),
-      ),
+    return CustomScaffold(
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Center(

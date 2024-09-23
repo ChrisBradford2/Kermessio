@@ -85,6 +85,8 @@ class TombolaManagementPageState extends State<TombolaManagementPage> {
           },
         );
 
+        if (!mounted) return;
+
         if (response.statusCode == 200) {
           final responseData = json.decode(response.body);
           setState(() {

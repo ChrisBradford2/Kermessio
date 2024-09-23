@@ -42,9 +42,11 @@ class InteractiveMapPageState extends State<InteractiveMapPage> {
       final response = await http.get(
         Uri.parse(url),
         headers: {
-          'Authorization': 'Bearer $token', // Ajouter le token dans l'en-tête
+          'Authorization': 'Bearer $token',
         },
       );
+
+      if (!mounted) return;
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

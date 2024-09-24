@@ -16,16 +16,22 @@ class RegisterPageState extends State<RegisterPage> {
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  // Role selected by the user
+  // Rôle sélectionné par l'utilisateur
   String? _selectedRole;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Inscription")),
-      body: Padding(
+      appBar: AppBar(
+        title: const Text("Inscription"),
+        centerTitle: true,
+        backgroundColor: Colors.greenAccent,
+      ),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
@@ -37,10 +43,14 @@ class RegisterPageState extends State<RegisterPage> {
                 );
               } else if (state is AuthUnauthenticated) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Inscription réussie ! Veuillez vous connecter.')),
+                  const SnackBar(
+                    content: Text('Inscription réussie ! Veuillez vous connecter.'),
+                  ),
                 );
-
-                Navigator.pushReplacementNamed(context, '/login');
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/login',
+                      (Route<dynamic> route) => false,
+                );
               }
             },
             builder: (context, state) {
@@ -49,74 +59,47 @@ class RegisterPageState extends State<RegisterPage> {
               }
               return Column(
                 children: [
-                  TextFormField(
+                  _buildTextField(
+                    controller: _firstNameController,
+                    labelText: 'Prénom',
+                    icon: Icons.person,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _lastNameController,
+                    labelText: 'Nom de famille',
+                    icon: Icons.person_outline,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
                     controller: _usernameController,
-                    decoration: const InputDecoration(labelText: 'Nom d\'utilisateur'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Veuillez entrer un nom d\'utilisateur';
-                      }
-                      return null;
-                    },
+                    labelText: 'Nom d\'utilisateur',
+                    icon: Icons.account_circle,
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
+                  _buildTextField(
                     controller: _emailController,
-                    decoration: const InputDecoration(labelText: 'Email'),
-                    validator: (value) {
-                      if (value == null || !value.contains('@')) {
-                        return 'Veuillez entrer un email valide';
-                      }
-                      return null;
-                    },
+                    labelText: 'Email',
+                    icon: Icons.email,
+                    keyboardType: TextInputType.emailAddress,
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
+                  _buildTextField(
                     controller: _passwordController,
-                    decoration: const InputDecoration(labelText: 'Mot de passe'),
+                    labelText: 'Mot de passe',
+                    icon: Icons.lock,
                     obscureText: true,
-                    validator: (value) {
-                      if (value == null || value.length < 6) {
-                        return 'Le mot de passe doit contenir au moins 6 caractères';
-                      }
-                      return null;
-                    },
                   ),
                   const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: 'Sélectionnez votre rôle',
-                      border: OutlineInputBorder(),
-                    ),
-                    value: _selectedRole,
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'parent',
-                        child: Text('Parent'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'booth_holder',
-                        child: Text('Teneur de stand'),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedRole = value;
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null) {
-                        return 'Veuillez sélectionner un rôle';
-                      }
-                      return null;
-                    },
-                  ),
+                  _buildRoleDropdown(),
                   const SizedBox(height: 40),
                   ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         context.read<AuthBloc>().add(
                           AuthRegisterRequested(
+                            lastName: _lastNameController.text,
+                            firstName: _firstNameController.text,
                             username: _usernameController.text,
                             email: _emailController.text,
                             password: _passwordController.text,
@@ -126,7 +109,8 @@ class RegisterPageState extends State<RegisterPage> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 50, vertical: 15),
                       backgroundColor: Colors.greenAccent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -143,6 +127,69 @@ class RegisterPageState extends State<RegisterPage> {
           ),
         ),
       ),
+    );
+  }
+
+  // Widget pour construire un champ de texte avec une icône et une validation
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData icon,
+    bool obscureText = false,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        prefixIcon: Icon(icon, color: Colors.greenAccent),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Veuillez entrer $labelText';
+        }
+        return null;
+      },
+    );
+  }
+
+  // Widget pour construire un Dropdown avec des rôles
+  Widget _buildRoleDropdown() {
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(
+        labelText: 'Sélectionnez votre rôle',
+        prefixIcon: const Icon(Icons.work, color: Colors.greenAccent),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      value: _selectedRole,
+      items: const [
+        DropdownMenuItem(
+          value: 'parent',
+          child: Text('Parent'),
+        ),
+        DropdownMenuItem(
+          value: 'booth_holder',
+          child: Text('Teneur de stand'),
+        ),
+      ],
+      onChanged: (value) {
+        setState(() {
+          _selectedRole = value;
+        });
+      },
+      validator: (value) {
+        if (value == null) {
+          return 'Veuillez sélectionner un rôle';
+        }
+        return null;
+      },
     );
   }
 }

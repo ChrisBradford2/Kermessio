@@ -38,10 +38,18 @@ class AuthRepository {
     }
   }
 
-  Future<String> register(String username, String email, String password, String role) async {
+  Future<String> register(
+    String username,
+    String lastName,
+    String firstName,
+    String email,
+    String password,
+    String role,
+  ) async {
     if (kDebugMode) {
       print('Tentative d\'inscription avec :');
-      print('Username: $username, Email: $email, Password: $password, Role: $role');
+      print(
+          'Username: $username, Email: $email, Password: $password, Role: $role, First Name: $firstName, Last Name: $lastName');
     }
 
     final response = await http.post(
@@ -54,6 +62,8 @@ class AuthRepository {
         'email': email,
         'password': password,
         'role': role,
+        'first_name': firstName,
+        'last_name': lastName,
       }),
     );
 
@@ -64,34 +74,33 @@ class AuthRepository {
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      if (kDebugMode) {
-        print('Inscription réussie avec message: ${data['message']}');
-      }
       return data['message'];
+    } else if (response.statusCode == 409) {
+      throw Exception("Le nom d'utilisateur ou l'email existe déjà.");
     } else {
-      if (kDebugMode) {
-        print('Erreur pendant l\'inscription: ${response.body}');
-      }
       throw Exception("Erreur d'inscription");
     }
   }
 
   Future<Map<String, dynamic>> getUserDetails(String token) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/user/me'), // Assure-toi que cette route existe dans ton backend
+      Uri.parse('$baseUrl/user/me'),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token', // Utiliser le token pour authentifier la requête
+        'Authorization': 'Bearer $token',
+        // Utiliser le token pour authentifier la requête
       },
     );
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       return {
-        'user': data['user'], // Assure-toi que le backend renvoie bien un objet "user"
+        'user': data['user'],
+        // Assure-toi que le backend renvoie bien un objet "user"
       };
     } else {
-      throw Exception("Erreur lors de la récupération des informations de l'utilisateur");
+      throw Exception(
+          "Erreur lors de la récupération des informations de l'utilisateur");
     }
   }
 }

@@ -3,8 +3,8 @@ package models
 type User struct {
 	Base
 	Username               string     `gorm:"unique" json:"username" binding:"required" example:"jdoe"`
-	LastName               string     `json:"last_name" binding:"required" example:"Doe"`
-	FirstName              string     `json:"first_name" binding:"required" example:"John"`
+	LastName               string     `json:"last_name" example:"Doe"`
+	FirstName              string     `json:"first_name" example:"John"`
 	Email                  string     `gorm:"unique;default:null" json:"email" binding:"required" example:"john.doe@example.com"`
 	Password               string     `gorm:"not null" json:"password" binding:"required" example:"password"`
 	Role                   string     `json:"role" gorm:"not null" binding:"required" example:"user"`

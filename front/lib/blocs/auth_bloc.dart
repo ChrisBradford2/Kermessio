@@ -54,13 +54,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _onRegisterRequested(AuthRegisterRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      final message = await authRepository.register(event.username, event.email, event.password, event.role);
+      final message = await authRepository.register(event.username, event.lastName, event.firstName, event.email, event.password, event.role);
       if (message.isEmpty) {
         throw Exception("Erreur lors de l'inscription");
       }
       emit(AuthUnauthenticated());
     } catch (e) {
-      emit(AuthError(message: e.toString()));
+      if (e.toString().contains("Le nom d'utilisateur ou l'email existe déjà.")) {
+        emit(AuthError(message: "Ce nom d'utilisateur ou cet email est déjà utilisé."));
+      } else {
+        emit(AuthError(message: e.toString()));
+      }
     }
   }
 

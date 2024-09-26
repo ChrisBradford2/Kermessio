@@ -26,8 +26,8 @@ class OrganizerViewState extends State<OrganizerView> {
   void initState() {
     super.initState();
     _kermesseRepository = KermesseRepository(
-      baseUrl: AppConfig().baseUrl,
-      token: widget.token,
+        baseUrl: AppConfig().baseUrl,
+        token: widget.token
     );
     _fetchKermesses();
   }
@@ -44,18 +44,16 @@ class OrganizerViewState extends State<OrganizerView> {
       if (kDebugMode) {
         print('Erreur lors du chargement des kermesses: $e');
       }
-      setState(() => _isLoading = false);
-      _showSnackBar('Erreur lors du chargement des kermesses: $e');
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur lors du chargement des kermesses: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
-  }
-
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
   }
 
   void _showKermesseOptions() {
@@ -69,26 +67,33 @@ class OrganizerViewState extends State<OrganizerView> {
               leading: const Icon(Icons.add),
               title: const Text('Créer une nouvelle kermesse'),
               onTap: () async {
-                Navigator.pop(context); // Ferme le modal
+                if (mounted) Navigator.pop(context);
+
                 final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => CreateKermessePage(kermesseRepository: _kermesseRepository),
                   ),
                 );
+
                 if (result != null && result == 'Kermesse créée avec succès') {
-                  _fetchKermesses();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Kermesse créée avec succès')),
-                  );
+                  if (mounted) {
+                    await _fetchKermesses();
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Kermesse créée avec succès')),
+                    );
+                  }
                 }
+
               },
             ),
             ListTile(
               leading: const Icon(Icons.group),
               title: const Text('Rejoindre une kermesse existante'),
               onTap: () {
-                Navigator.pop(context); // Ferme le modal
+                if (mounted) Navigator.pop(context);
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -103,89 +108,94 @@ class OrganizerViewState extends State<OrganizerView> {
     );
   }
 
-  Widget _buildKermesseList() {
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: _kermesses.length,
-      itemBuilder: (context, index) {
-        final kermesse = _kermesses[index];
-        return Card(
-          child: ListTile(
-            title: Text(kermesse.name),
-            subtitle: Text('ID : ${kermesse.id}'),
-            trailing: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => KermesseDetailsPage(kermesse: kermesse),
-                  ),
-                );
-              },
-              child: const Text('Voir Détails'),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildKermesseButtons() {
-    return Column(
-      children: [
-        ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CreateKermessePage(kermesseRepository: _kermesseRepository),
-              ),
-            );
-          },
-          child: const Text('Créer une nouvelle kermesse'),
-        ),
-        const SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const JoinKermessePage(),
-              ),
-            );
-          },
-          child: const Text('Rejoindre une kermesse existante'),
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+          : _kermesses.isEmpty
+          ? Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text(
-              'Bienvenue dans la vue organisateur',
-              style: TextStyle(fontSize: 24),
-              textAlign: TextAlign.center,
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        CreateKermessePage(kermesseRepository: _kermesseRepository),
+                  ),
+                ).then((result) {
+                  if (result != null && result == 'Kermesse créée avec succès') {
+                    _fetchKermesses(); // Rafraîchir la liste après la création
+                  }
+                });
+              },
+              child: const Text('Créer une nouvelle kermesse'),
             ),
             const SizedBox(height: 20),
-            _kermesses.isEmpty ? _buildKermesseButtons() : _buildKermesseList(),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const JoinKermessePage(),
+                  ),
+                );
+              },
+              child: const Text('Rejoindre une kermesse existante'),
+            ),
           ],
         ),
+      )
+          : Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Text(
+                'Vos Kermesses :',
+                style: TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 10),
+              ListView.builder(
+                shrinkWrap: true,
+                itemCount: _kermesses.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                    child: ListTile(
+                      title: Text(_kermesses[index].name),
+                      subtitle: Text('ID : ${_kermesses[index].id}'),
+                      trailing: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  KermesseDetailsPage(kermesse: _kermesses[index]),
+                            ),
+                          );
+                        },
+                        child: const Text('Voir Détails'),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: _kermesses.isNotEmpty
+          ? FloatingActionButton(
         onPressed: _showKermesseOptions,
         backgroundColor: Colors.greenAccent,
         child: const Icon(Icons.add),
-      ),
+      )
+          : null,
     );
   }
 }

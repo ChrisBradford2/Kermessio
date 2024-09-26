@@ -6,4 +6,6 @@ type Kermesse struct {
 	Organizers    []User     `json:"organizers" gorm:"many2many:kermesse_organizers;"`
 	Activities    []Activity `json:"activities" gorm:"foreignKey:KermesseID"`
 	TombolaPrizes []Stock    `json:"tombola_prizes" gorm:"foreignKey:KermesseID"`
+	SchoolID      uint       `json:"school_id" gorm:"not null"`
+	School        School     `json:"school" gorm:"foreignKey:SchoolID"`
 }

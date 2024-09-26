@@ -1,10 +1,12 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 	"kermessio/config"
 	"kermessio/database"
 	"kermessio/models"
@@ -107,13 +109,24 @@ func Register(c *gin.Context) {
 	fmt.Println("Rôle reçu :", input.Role)
 
 	var existingUser models.User
-	if err := database.DB.Where("username = ?", input.Username).First(&existingUser).Error; err == nil {
+
+	// Vérifier si le nom d'utilisateur existe déjà
+	if err := database.DB.Where("username = ?", input.Username).First(&existingUser).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		// Si une erreur autre que "record not found" est rencontrée, la retourner
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la vérification du nom d'utilisateur"})
+		return
+	} else if err == nil {
 		// Si on trouve un utilisateur avec le même nom d'utilisateur, renvoyer une erreur
 		c.JSON(http.StatusConflict, gin.H{"error": "Le nom d'utilisateur est déjà utilisé"})
 		return
 	}
 
-	if err := database.DB.Where("email = ?", input.Email).First(&existingUser).Error; err == nil {
+	// Vérifier si l'email existe déjà
+	if err := database.DB.Where("email = ?", input.Email).First(&existingUser).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		// Si une erreur autre que "record not found" est rencontrée, la retourner
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la vérification de l'email"})
+		return
+	} else if err == nil {
 		// Si on trouve un utilisateur avec le même email, renvoyer une erreur
 		c.JSON(http.StatusConflict, gin.H{"error": "L'email est déjà utilisé"})
 		return
@@ -137,6 +150,13 @@ func Register(c *gin.Context) {
 	// For roles other than "child", ensure that an email is provided and valid
 	if input.Role != config.RoleChild && input.Email == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Email is required for non-child roles"})
+		return
+	}
+
+	// Vérifier si l'école existe
+	var school models.School
+	if err := database.DB.First(&school, input.SchoolID).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "École non trouvée"})
 		return
 	}
 
@@ -164,6 +184,7 @@ func Register(c *gin.Context) {
 		Role:      input.Role,
 		PositionX: x,
 		PositionY: y,
+		SchoolID:  input.SchoolID,
 	}
 
 	if err := database.DB.Create(&user).Error; err != nil {

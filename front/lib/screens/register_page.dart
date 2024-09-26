@@ -1,9 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../blocs/auth_bloc.dart';
 import '../blocs/auth_event.dart';
 import '../blocs/auth_state.dart';
+import '../blocs/school_bloc.dart'; // Bloc to fetch the list of schools
+import '../blocs/school_event.dart';
+import '../blocs/school_state.dart';
+import '../models/school_model.dart'; // School model
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -20,8 +25,15 @@ class RegisterPageState extends State<RegisterPage> {
   final _lastNameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  // Rôle sélectionné par l'utilisateur
   String? _selectedRole;
+  School? _selectedSchool; // The selected school will be stored here
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch the list of schools when the page is loaded
+    context.read<SchoolBloc>().add(FetchSchoolsEvent());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,11 +103,13 @@ class RegisterPageState extends State<RegisterPage> {
                     obscureText: true,
                   ),
                   const SizedBox(height: 16),
+                  _buildSchoolAutocomplete(context),
+                  const SizedBox(height: 16),
                   _buildRoleDropdown(),
                   const SizedBox(height: 40),
                   ElevatedButton(
                     onPressed: () {
-                      if (_formKey.currentState!.validate()) {
+                      if (_formKey.currentState!.validate() && _selectedSchool != null) {
                         context.read<AuthBloc>().add(
                           AuthRegisterRequested(
                             lastName: _lastNameController.text,
@@ -104,7 +118,12 @@ class RegisterPageState extends State<RegisterPage> {
                             email: _emailController.text,
                             password: _passwordController.text,
                             role: _selectedRole!,
+                            schoolId: _selectedSchool!.id, // Ensure school ID is selected
                           ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Veuillez sélectionner une école')),
                         );
                       }
                     },
@@ -130,7 +149,6 @@ class RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  // Widget pour construire un champ de texte avec une icône et une validation
   Widget _buildTextField({
     required TextEditingController controller,
     required String labelText,
@@ -158,7 +176,6 @@ class RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  // Widget pour construire un Dropdown avec des rôles
   Widget _buildRoleDropdown() {
     return DropdownButtonFormField<String>(
       decoration: InputDecoration(
@@ -171,13 +188,24 @@ class RegisterPageState extends State<RegisterPage> {
       value: _selectedRole,
       items: const [
         DropdownMenuItem(
-          value: 'parent',
-          child: Text('Parent'),
+          value: null,
+          child: Text('Sélectionnez votre rôle'),
         ),
-        DropdownMenuItem(
-          value: 'booth_holder',
-          child: Text('Teneur de stand'),
-        ),
+        if (kIsWeb)
+          DropdownMenuItem(
+            value: 'organizer',
+            child: Text('Organisateur'),
+          )
+        else ...[
+          DropdownMenuItem(
+            value: 'parent',
+            child: Text('Parent'),
+          ),
+          DropdownMenuItem(
+            value: 'booth_holder',
+            child: Text('Teneur de stand'),
+          ),
+        ],
       ],
       onChanged: (value) {
         setState(() {
@@ -189,6 +217,53 @@ class RegisterPageState extends State<RegisterPage> {
           return 'Veuillez sélectionner un rôle';
         }
         return null;
+      },
+    );
+  }
+
+  Widget _buildSchoolAutocomplete(BuildContext context) {
+    return BlocBuilder<SchoolBloc, SchoolState>(
+      builder: (context, state) {
+        if (state is SchoolLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is SchoolLoaded) {
+          return Autocomplete<School>(
+            optionsBuilder: (TextEditingValue textEditingValue) {
+              if (textEditingValue.text.isEmpty) {
+                return const Iterable<School>.empty();
+              }
+              return state.schools.where((School school) {
+                return school.name.toLowerCase().contains(textEditingValue.text.toLowerCase());
+              });
+            },
+            onSelected: (School selection) {
+              _selectedSchool = selection;
+            },
+            displayStringForOption: (School option) => option.name,
+            fieldViewBuilder: (BuildContext context, TextEditingController fieldTextEditingController, FocusNode fieldFocusNode, VoidCallback onFieldSubmitted) {
+              return TextFormField(
+                controller: fieldTextEditingController,
+                focusNode: fieldFocusNode,
+                decoration: InputDecoration(
+                  labelText: 'Sélectionnez votre école',
+                  prefixIcon: const Icon(Icons.school, color: Colors.greenAccent),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Veuillez sélectionner une école';
+                  }
+                  return null;
+                },
+              );
+            },
+          );
+        } else if (state is SchoolError) {
+          return Text('Erreur lors du chargement des écoles : ${state.message}');
+        }
+        return const Text('Aucune école disponible');
       },
     );
   }

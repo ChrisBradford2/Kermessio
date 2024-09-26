@@ -45,11 +45,12 @@ class AuthRepository {
     String email,
     String password,
     String role,
+    int schoolId,
   ) async {
     if (kDebugMode) {
       print('Tentative d\'inscription avec :');
       print(
-          'Username: $username, Email: $email, Password: $password, Role: $role, First Name: $firstName, Last Name: $lastName');
+          'Username: $username, Email: $email, Password: $password, Role: $role, First Name: $firstName, Last Name: $lastName, School ID: $schoolId');
     }
 
     final response = await http.post(
@@ -64,6 +65,7 @@ class AuthRepository {
         'role': role,
         'first_name': firstName,
         'last_name': lastName,
+        'school_id': schoolId,
       }),
     );
 

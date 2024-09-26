@@ -4,10 +4,12 @@ import '../widgets/logout_widget.dart';
 
 class CustomScaffold extends StatelessWidget {
   final Widget body;
+  final Widget? floatingActionButton;
 
   const CustomScaffold({
     super.key,
     required this.body,
+    this.floatingActionButton,
   });
 
   @override
@@ -20,6 +22,7 @@ class CustomScaffold extends StatelessWidget {
         ],
       ),
       body: body,
+      floatingActionButton: floatingActionButton,
     );
   }
 }

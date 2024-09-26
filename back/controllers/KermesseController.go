@@ -34,11 +34,18 @@ func CreateKermesse(c *gin.Context) {
 		return
 	}
 
+	var school models.School
+	if err := database.DB.Where("id = ?", currentUser.SchoolID).First(&school).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération de l'école de l'organisateur"})
+		return
+	}
+
 	kermesse := models.Kermesse{
 		Name: req.Name,
 		Organizers: []models.User{
 			currentUser,
 		},
+		SchoolID: school.ID,
 	}
 
 	if err := database.DB.Create(&kermesse).Error; err != nil {
@@ -134,9 +141,33 @@ func GetUserKermesses(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des kermesses pour le participant"})
 			return
 		}
+
+		var schoolKermesses []models.Kermesse
+		if err := database.DB.Where("school_id = ?", user.SchoolID).Find(&schoolKermesses).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des kermesses de l'école"})
+			return
+		}
+
+		for _, kermesse := range schoolKermesses {
+			// Si l'utilisateur n'est pas déjà un participant de cette kermesse
+			if !containsKermesse(user.KermessesAsParticipant, kermesse) {
+				database.DB.Model(&kermesse).Association("Participants").Append(&user)
+			}
+		}
+
 		kermesses = user.KermessesAsParticipant
 	}
 
 	// Retourner les kermesses
 	c.JSON(http.StatusOK, gin.H{"kermesses": kermesses})
+}
+
+// Fonction utilitaire pour vérifier si un utilisateur est déjà inscrit à une kermesse
+func containsKermesse(kermesses []models.Kermesse, kermesse models.Kermesse) bool {
+	for _, k := range kermesses {
+		if k.ID == kermesse.ID {
+			return true
+		}
+	}
+	return false
 }

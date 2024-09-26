@@ -79,6 +79,9 @@ func main() {
 	if err := database.DB.AutoMigrate(&models.ChatMessage{}); err != nil {
 		log.Fatal("Failed to migrate chats: ", err)
 	}
+	if err := database.DB.AutoMigrate(&models.School{}); err != nil {
+		log.Fatal("Failed to migrate schools: ", err)
+	}
 	log.Println("Database migrated!")
 
 	if os.Getenv("GO_ENV") == "production" {
@@ -118,6 +121,7 @@ func main() {
 	routes.KermesseRoutes(r)
 	routes.TombolaRoutes(r)
 	routes.ChatMessageRoutes(r)
+	routes.SchoolRoutes(r)
 
 	go middleware.HandleMessages()
 

@@ -19,6 +19,8 @@ type User struct {
 	KermessesAsParticipant []Kermesse `gorm:"many2many:kermesse_participants;"`
 	PositionX              int        `json:"position_x" gorm:"default:0"`
 	PositionY              int        `json:"position_y" gorm:"default:0"`
+	SchoolID               uint       `json:"school_id" gorm:"not null"` // Clé étrangère vers l'école
+	School                 School     `json:"school" gorm:"foreignKey:SchoolID"`
 }
 
 type UserRegister struct {
@@ -28,6 +30,8 @@ type UserRegister struct {
 	Email     string `gorm:"unique;default:null" json:"email" example:"john.doe@example.com"`
 	Password  string `json:"password" binding:"required" example:"password"`
 	Role      string `json:"role" binding:"required" example:"parent"`
+	SchoolID  uint   `json:"school_id" gorm:"not null"` // Clé étrangère vers l'école
+	School    School `json:"school" gorm:"foreignKey:SchoolID"`
 }
 
 type UserRegisterResponse struct {

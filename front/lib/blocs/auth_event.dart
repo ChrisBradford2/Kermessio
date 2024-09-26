@@ -24,6 +24,7 @@ class AuthRegisterRequested extends AuthEvent {
   final String email;
   final String password;
   final String role;
+  final int schoolId;
 
   AuthRegisterRequested(
       {required this.username,
@@ -31,11 +32,12 @@ class AuthRegisterRequested extends AuthEvent {
       required this.firstName,
       required this.email,
       required this.password,
-      required this.role});
+      required this.role,
+      required this.schoolId});
 
   @override
   List<Object?> get props =>
-      [username, lastName, firstName, email, password, role];
+      [username, lastName, firstName, email, password, role, schoolId];
 }
 
 class AuthRefreshRequested extends AuthEvent {}

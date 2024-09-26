@@ -148,7 +148,11 @@ class ChildViewState extends State<ChildView> {
             children: [
               ActivityButton(authState: authState),
               const SizedBox(height: 20),
-              BuyStockButton(stockRepository: widget.stockRepository, user: widget.user),
+              BuyStockButton(
+                stockRepository: widget.stockRepository,
+                user: widget.user,
+                onStockPurchased: _fetchPurchases,  // Ajouter cette fonction de rafraîchissement
+              ),
               const SizedBox(height: 20),
               BlocBuilder<KermesseBloc, KermesseState>(
                 builder: (context, kermesseState) {
@@ -158,8 +162,7 @@ class ChildViewState extends State<ChildView> {
                       onBuyTicket: () => _buyTombolaTicket(kermesseState.kermesseId),
                     );
                   } else {
-                    return  TombolaButton(hasBoughtTicket: true, onBuyTicket: () {});
-
+                    return TombolaButton(hasBoughtTicket: true, onBuyTicket: () {});
                   }
                 },
               ),

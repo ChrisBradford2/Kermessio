@@ -47,7 +47,8 @@ class ChildDetailsPageState extends State<ChildDetailsPage> {
           children: <Widget>[
             Text(
               "Attribuer des jetons à ${widget.child.username}",
-              style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+              style:
+                  const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20.0),
             TextField(
@@ -59,19 +60,20 @@ class ChildDetailsPageState extends State<ChildDetailsPage> {
             _isLoading
                 ? const CircularProgressIndicator()
                 : BlocBuilder<AuthBloc, AuthState>(
-              builder: (context, state) {
-                if (state is AuthAuthenticated) {
-                  return ElevatedButton(
-                    onPressed: () => _assignTokens(state.token),
-                    child: const Text("Attribuer"),
-                  );
-                } else if (state is AuthUnauthenticated) {
-                  return const Text('Vous devez être connecté pour attribuer des jetons');
-                } else {
-                  return const CircularProgressIndicator();
-                }
-              },
-            ),
+                    builder: (context, state) {
+                      if (state is AuthAuthenticated) {
+                        return ElevatedButton(
+                          onPressed: () => _assignTokens(state.token),
+                          child: const Text("Attribuer"),
+                        );
+                      } else if (state is AuthUnauthenticated) {
+                        return const Text(
+                            'Vous devez être connecté pour attribuer des jetons');
+                      } else {
+                        return const CircularProgressIndicator();
+                      }
+                    },
+                  ),
             const SizedBox(height: 30),
             _buildInteractionSection(),
           ],
@@ -89,7 +91,8 @@ class ChildDetailsPageState extends State<ChildDetailsPage> {
 
     if (tokens == null || tokens <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez entrer un nombre valide de jetons')),
+        const SnackBar(
+            content: Text('Veuillez entrer un nombre valide de jetons')),
       );
       setState(() {
         _isLoading = false;
@@ -116,7 +119,8 @@ class ChildDetailsPageState extends State<ChildDetailsPage> {
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erreur lors de l\'attribution des jetons')),
+          const SnackBar(
+              content: Text('Erreur lors de l\'attribution des jetons')),
         );
       }
     } catch (e) {
@@ -138,7 +142,8 @@ class ChildDetailsPageState extends State<ChildDetailsPage> {
 
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
-      final url = '${AppConfig().baseUrl}/user/child/${widget.child.id}/interactions';
+      final url =
+          '${AppConfig().baseUrl}/user/child/${widget.child.id}/interactions';
       try {
         final response = await http.get(
           Uri.parse(url),
@@ -179,41 +184,53 @@ class ChildDetailsPageState extends State<ChildDetailsPage> {
 
     return _interactions.isNotEmpty
         ? Expanded(
-      child: ListView.builder(
-        itemCount: _interactions.length,
-        itemBuilder: (context, index) {
-          final interaction = _interactions[index];
-          final activity = interaction['activity_id'];
-          final stock = interaction['stock'];
-          final createdAt = interaction['createdAt'];
-          final formattedDate = DateFormat('dd-MM-yyyy HH:mm').format(DateTime.parse(createdAt).toLocal());
-          final boothHolder = interaction['stock'] != null ? interaction['stock']['user'] : null;
-          return ListTile(
-            title: activity != null
-                ? Text('Activité : ${activity['name']}')
-                : Text('${stock['type']} : ${stock['item_name']}'),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text('Quantité: ${interaction['tokens']}'),
-                Text('Date: $formattedDate'),
-                Row(
-                  children: <Widget>[
-                    const Text('Chez '),
-                    Text(
-                      boothHolder != null
-                          ? boothHolder['username']
-                          : 'un utilisateur inconnu',
-                      style: const TextStyle(fontStyle: FontStyle.italic),
-                    ),
-                  ],
-                ),
-              ],
+            child: ListView.builder(
+              itemCount: _interactions.length,
+              itemBuilder: (context, index) {
+                final interaction = _interactions[index];
+                final activity = interaction['activity'];
+                final stock = interaction['stock'];
+                final createdAt = interaction['createdAt'];
+                final formattedDate = DateFormat('dd/MM/yyyy HH:mm')
+                    .format(DateTime.parse(createdAt).toLocal());
+                final boothHolderActivity = interaction['activity'] != null
+                    ? interaction['activity']['booth_holder']
+                    : null;
+                final boothHolderStock = interaction['stock'] != null
+                    ? interaction['stock']['booth_holder']
+                    : null;
+                print("Stock: $stock");
+                print("Activity: $activity");
+                return ListTile(
+                  title: (stock != null && stock['item_name'] != null && stock['item_name'] != '')
+                      ? Text('${stock['type']} : ${stock['item_name']}')
+                      : (activity != null && activity['name'] != null && activity['name'] != '')
+                      ? Text('Activité : ${activity['name']}')
+                      : const Text('Aucune activité ou stock disponible'),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text('Quantité: ${interaction['tokens']}'),
+                      Text('Date: $formattedDate'),
+                      Row(
+                        children: <Widget>[
+                          const Text('Chez '),
+                          Text(
+                            boothHolderStock != null && boothHolderStock['username'] != null && boothHolderStock['username'] != ''
+                                ? boothHolderStock['username']
+                                : boothHolderActivity != null && boothHolderActivity['username'] != null && boothHolderActivity['username'] != ''
+                                ? boothHolderActivity['username']
+                                : 'un utilisateur inconnu',
+                            style: const TextStyle(fontStyle: FontStyle.italic),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
-    )
+          )
         : const Text('Aucune interaction trouvée pour cet enfant.');
   }
 }

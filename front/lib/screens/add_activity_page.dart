@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../models/activity_model.dart';
 import '../repositories/activity_repository.dart';
+import '../blocs/kermesse_bloc.dart';
+import '../blocs/kermesse_state.dart';
 
 class AddActivityPage extends StatefulWidget {
   final ActivityRepository activityRepository;
@@ -28,110 +31,77 @@ class AddActivityPageState extends State<AddActivityPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nom de l\'activité',
-                  border: OutlineInputBorder(),
+        child: BlocBuilder<KermesseBloc, KermesseState>(
+          builder: (context, kermesseState) {
+            if (kermesseState is KermesseSelected) {
+              return Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    _buildTextInput(_nameController, 'Nom de l\'activité'),
+                    const SizedBox(height: 16.0),
+                    _buildTextInput(_typeController, 'Type d\'activité'),
+                    const SizedBox(height: 16.0),
+                    _buildTextInput(_emojiController, 'Emoji (facultatif)'),
+                    const SizedBox(height: 16.0),
+                    _buildTextInput(_priceController, 'Prix en jetons', isNumber: true),
+                    const SizedBox(height: 16.0),
+                    _buildTextInput(_pointsController, 'Points attribués', isNumber: true),
+                    const SizedBox(height: 30.0),
+                    Center(
+                      child: _isLoading
+                          ? const CircularProgressIndicator()
+                          : ElevatedButton(
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            _saveActivity(kermesseState.kermesseId);
+                          }
+                        },
+                        child: const Text('Enregistrer l\'activité'),
+                      ),
+                    ),
+                  ],
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez entrer le nom de l\'activité';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16.0),
-              TextFormField(
-                controller: _typeController,
-                decoration: const InputDecoration(
-                  labelText: 'Type d\'activité',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez entrer le type de l\'activité';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16.0),
-              TextFormField(
-                controller: _emojiController,
-                decoration: const InputDecoration(
-                  labelText: 'Emoji (facultatif)',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16.0),
-              TextFormField(
-                controller: _priceController,
-                decoration: const InputDecoration(
-                  labelText: 'Prix en jetons',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez entrer un prix en jetons';
-                  }
-                  if (int.tryParse(value) == null) {
-                    return 'Veuillez entrer un nombre valide';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16.0),
-              TextFormField(
-                controller: _pointsController,
-                decoration: const InputDecoration(
-                  labelText: 'Points attribués',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez entrer le nombre de points';
-                  }
-                  if (int.tryParse(value) == null) {
-                    return 'Veuillez entrer un nombre valide';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 30.0),
-              Center(
-                child: _isLoading
-                    ? const CircularProgressIndicator()
-                    : ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      _saveActivity();
-                    }
-                  },
-                  child: const Text('Enregistrer l\'activité'),
-                ),
-              ),
-            ],
-          ),
+              );
+            } else {
+              return const Center(
+                child: Text('Veuillez sélectionner une kermesse avant de continuer.'),
+              );
+            }
+          },
         ),
       ),
     );
   }
 
-  void _saveActivity() async {
+  Widget _buildTextInput(TextEditingController controller, String label, {bool isNumber = false}) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
+      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+      validator: (value) {
+        if (label == 'Emoji (facultatif)') {
+          return null;
+        }
+        if (value == null || value.isEmpty) {
+          return 'Veuillez entrer $label';
+        }
+        if (isNumber && int.tryParse(value) == null) {
+          return 'Veuillez entrer un nombre valide';
+        }
+        return null;
+      },
+    );
+  }
+
+  void _saveActivity(int kermesseId) async {
     final name = _nameController.text;
     final type = _typeController.text;
     final emoji = _emojiController.text.isNotEmpty ? _emojiController.text : null;
     final price = int.tryParse(_priceController.text);
     final points = int.tryParse(_pointsController.text);
 
-    // Vérifier les données
     if (price == null || points == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Veuillez entrer des valeurs valides')),
@@ -151,6 +121,7 @@ class AddActivityPageState extends State<AddActivityPage> {
       price: price,
       points: points,
       boothHolderId: 0,
+      kermesseId: kermesseId,
     );
 
     try {
@@ -161,7 +132,7 @@ class AddActivityPageState extends State<AddActivityPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Activité enregistrée avec succès')),
         );
-        _formKey.currentState?.reset();
+        Navigator.pop(context, 'Activité enregistrée avec succès');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Erreur lors de la création de l\'activité')),

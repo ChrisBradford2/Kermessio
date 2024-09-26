@@ -54,6 +54,7 @@ class BuyStockPageState extends State<BuyStockPage> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Vous avez acheté ${stock.itemName} pour ${stock.price} jetons'),
         ));
+        Navigator.pop(context, 'Achat réussi');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Erreur lors de l\'achat'),

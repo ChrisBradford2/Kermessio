@@ -370,9 +370,8 @@ func GetChildInteractions(c *gin.Context) {
 
 	var interactions []models.Interaction
 	if err := database.DB.Where("user_id = ?", childID).
-		Preload("Activity").
-		Preload("Stock").
-		Preload("Stock.User").
+		Preload("Activity.BoothHolder").
+		Preload("Stock.BoothHolder").
 		Find(&interactions).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des interactions"})
 		return

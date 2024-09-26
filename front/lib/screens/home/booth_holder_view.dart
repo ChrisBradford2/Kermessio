@@ -112,8 +112,8 @@ class BoothHolderViewState extends State<BoothHolderView> {
           _buildActionTile(
             icon: Icons.add_circle_outline,
             label: 'Ajouter une activité',
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => AddActivityPage(
@@ -124,13 +124,20 @@ class BoothHolderViewState extends State<BoothHolderView> {
                   ),
                 ),
               );
+
+              if (result != null && result == 'Activité enregistrée avec succès') {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Activité enregistrée avec succès')),
+                );
+                _fetchData();
+              }
             },
           ),
           _buildActionTile(
             icon: Icons.fastfood,
             label: 'Ajouter un consommable',
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => AddStockPage(
@@ -141,6 +148,14 @@ class BoothHolderViewState extends State<BoothHolderView> {
                   ),
                 ),
               );
+
+              // Si un consommable est ajouté avec succès, afficher un message et rafraîchir la page
+              if (result != null && result == 'Consommable ajouté avec succès') {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Consommable ajouté avec succès')),
+                );
+                _fetchData(); // Rafraîchir les données
+              }
             },
           ),
           _buildActionTile(

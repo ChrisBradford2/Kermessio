@@ -155,9 +155,9 @@ class AddStockPageState extends State<AddStockPage> {
 
       if (createdStock != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Consommable ajouté avec succès')),
-        );
-        _formKey.currentState?.reset();
+            const SnackBar(content: Text('Consommable ajouté avec succès')));
+
+        Navigator.pop(context, 'Consommable ajouté avec succès');
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

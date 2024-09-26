@@ -57,8 +57,9 @@ func CreateParticipation(c *gin.Context) {
 	participation := models.Participation{
 		UserID:     req.UserID,
 		ActivityID: req.ActivityID,
-		Points:     0, // Initialement, les points peuvent être à 0 jusqu'à ce que le vainqueur soit décidé
-		IsWinner:   false,
+		Points:     0,                   // Initialement, les points peuvent être à 0 jusqu'à ce que le vainqueur soit décidé
+		IsWinner:   false,               // Initialement, l'utilisateur n'est pas le vainqueur
+		KermesseID: activity.KermesseID, // Récupérer le KermesseID de l'activité
 	}
 
 	if err := database.DB.Create(&participation).Error; err != nil {

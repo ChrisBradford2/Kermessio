@@ -66,6 +66,7 @@ type PublicChild struct {
 	Base
 	Username string `json:"username"`
 	Tokens   int    `json:"tokens"`
+	Points   int    `json:"points"`
 }
 
 type TokensRequest struct {

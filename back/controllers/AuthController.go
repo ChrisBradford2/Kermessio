@@ -82,6 +82,7 @@ func Login(c *gin.Context) {
 			"email":    user.Email,
 			"role":     user.Role,
 			"tokens":   user.Tokens,
+			"points":   user.Points,
 		},
 	})
 }

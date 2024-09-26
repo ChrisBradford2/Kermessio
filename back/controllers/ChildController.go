@@ -5,6 +5,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"kermessio/database"
 	"kermessio/models"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -113,8 +114,11 @@ func GetChildren(c *gin.Context) {
 			Base:     child.Base,
 			Username: child.Username,
 			Tokens:   int(child.Tokens),
+			Points:   child.Points,
 		})
 	}
+
+	log.Println(publicChildren)
 
 	c.JSON(http.StatusOK, publicChildren)
 }
@@ -160,6 +164,7 @@ func GetChild(c *gin.Context) {
 		Base:     child.Base,
 		Username: child.Username,
 		Tokens:   int(child.Tokens),
+		Points:   child.Points,
 	}
 
 	c.JSON(http.StatusOK, publicChild)

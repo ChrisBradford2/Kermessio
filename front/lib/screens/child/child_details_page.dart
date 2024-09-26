@@ -199,8 +199,6 @@ class ChildDetailsPageState extends State<ChildDetailsPage> {
                 final boothHolderStock = interaction['stock'] != null
                     ? interaction['stock']['booth_holder']
                     : null;
-                print("Stock: $stock");
-                print("Activity: $activity");
                 return ListTile(
                   title: (stock != null && stock['item_name'] != null && stock['item_name'] != '')
                       ? Text('${stock['type']} : ${stock['item_name']}')

@@ -112,12 +112,17 @@ class ParentView extends StatelessWidget {
                     ),
                   ),
                   ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
+                    onPressed: () async {
+                      final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const CreateChildPage()),
+                          builder: (context) => const CreateChildPage(),
+                        ),
                       );
+
+                      if (result != null && result == true) {
+                        context.read<ChildBloc>().add(LoadChildren(parentToken: authState.token));
+                      }
                     },
                     child: const Text("Créer un compte enfant"),
                   ),

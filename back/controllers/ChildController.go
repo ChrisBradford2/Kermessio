@@ -58,6 +58,7 @@ func CreateChild(c *gin.Context) {
 		Password: string(hashedPassword),
 		Role:     "child",        // Role is set as "enfant"
 		ParentID: &parentUser.ID, // Link to the parent
+		SchoolID: parentUser.SchoolID,
 	}
 
 	// Save the child account in the database
@@ -97,6 +98,11 @@ func GetChildren(c *gin.Context) {
 	var children []models.User
 	if err := database.DB.Where("parent_id = ?", parentUser.ID).Find(&children).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get children"})
+		return
+	}
+
+	if len(children) == 0 {
+		c.JSON(http.StatusOK, []models.PublicChild{})
 		return
 	}
 

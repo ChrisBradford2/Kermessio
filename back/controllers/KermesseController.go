@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"kermessio/database"
 	"kermessio/models"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -130,14 +131,17 @@ func GetUserKermesses(c *gin.Context) {
 	}
 
 	var kermesses []models.Kermesse
+
+	// Organisateur : récupère les kermesses organisées par l'utilisateur
 	if user.Role == "organizer" {
-		if err := database.DB.Preload("KermessesAsOrganizer").First(&user, user.ID).Error; err != nil {
+		if err := database.DB.Preload("KermessesAsOrganizer").Where("id = ?", user.ID).Find(&user).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des kermesses pour l'organisateur"})
 			return
 		}
 		kermesses = user.KermessesAsOrganizer
 	} else {
-		if err := database.DB.Preload("KermessesAsParticipant").First(&user, user.ID).Error; err != nil {
+		// Participant : cherche les kermesses de l'école
+		if err := database.DB.Preload("KermessesAsParticipant").Where("id = ?", user.ID).Find(&user).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des kermesses pour le participant"})
 			return
 		}
@@ -151,8 +155,19 @@ func GetUserKermesses(c *gin.Context) {
 		for _, kermesse := range schoolKermesses {
 			// Si l'utilisateur n'est pas déjà un participant de cette kermesse
 			if !containsKermesse(user.KermessesAsParticipant, kermesse) {
-				database.DB.Model(&kermesse).Association("Participants").Append(&user)
+				if err := database.DB.Model(&kermesse).Association("Participants").Append(&user); err != nil {
+					log.Printf("Erreur lors de l'ajout de l'utilisateur à la kermesse: %v", err)
+					c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de l'ajout de l'utilisateur à la kermesse"})
+					return
+				}
 			}
+		}
+
+		// Recharger les kermesses de l'utilisateur
+		if err := database.DB.Preload("KermessesAsParticipant").Where("id = ?", user.ID).Find(&user).Error; err != nil {
+			log.Printf("Erreur lors de la récupération des kermesses: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des kermesses pour le participant"})
+			return
 		}
 
 		kermesses = user.KermessesAsParticipant

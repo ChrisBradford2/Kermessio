@@ -18,12 +18,11 @@ class LoginPage extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // Image de fond pour un thème de kermesse colorée
           Positioned.fill(
             child: Image.asset(
               kIsWeb ? 'images/kermesse_background_desktop.gif' : 'images/kermesse_background_mobile.gif',
               fit: BoxFit.cover,
-              color: Colors.black.withOpacity(0.3), // Assombrissement pour contraster avec les éléments
+              color: Colors.black.withOpacity(0.3),
               colorBlendMode: BlendMode.darken,
             ),
           ),

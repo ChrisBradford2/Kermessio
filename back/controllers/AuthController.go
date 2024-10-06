@@ -1,9 +1,12 @@
 package controllers
 
 import (
+	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 	"kermessio/config"
 	"kermessio/database"
 	"kermessio/models"
@@ -79,6 +82,7 @@ func Login(c *gin.Context) {
 			"email":    user.Email,
 			"role":     user.Role,
 			"tokens":   user.Tokens,
+			"points":   user.Points,
 		},
 	})
 }
@@ -95,16 +99,37 @@ func Login(c *gin.Context) {
 // @Failure 500 {object} models.ErrorResponse "Internal server error"
 // @Router /user/register [post]
 func Register(c *gin.Context) {
-	var input struct {
-		Username string `json:"username" binding:"required"`
-		Email    string `json:"email" binding:"email"`
-		Password string `json:"password" binding:"required,min=6"`
-		Role     string `json:"role" binding:"required"`
-	}
+	input := models.UserRegister{}
 
 	// Bind JSON request body to the input struct
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	fmt.Println("Rôle reçu :", input.Role)
+
+	var existingUser models.User
+
+	// Vérifier si le nom d'utilisateur existe déjà
+	if err := database.DB.Where("username = ?", input.Username).First(&existingUser).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		// Si une erreur autre que "record not found" est rencontrée, la retourner
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la vérification du nom d'utilisateur"})
+		return
+	} else if err == nil {
+		// Si on trouve un utilisateur avec le même nom d'utilisateur, renvoyer une erreur
+		c.JSON(http.StatusConflict, gin.H{"error": "Le nom d'utilisateur est déjà utilisé"})
+		return
+	}
+
+	// Vérifier si l'email existe déjà
+	if err := database.DB.Where("email = ?", input.Email).First(&existingUser).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		// Si une erreur autre que "record not found" est rencontrée, la retourner
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la vérification de l'email"})
+		return
+	} else if err == nil {
+		// Si on trouve un utilisateur avec le même email, renvoyer une erreur
+		c.JSON(http.StatusConflict, gin.H{"error": "L'email est déjà utilisé"})
 		return
 	}
 
@@ -129,6 +154,13 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	// Vérifier si l'école existe
+	var school models.School
+	if err := database.DB.First(&school, input.SchoolID).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "École non trouvée"})
+		return
+	}
+
 	// Hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -146,11 +178,14 @@ func Register(c *gin.Context) {
 	// Create a new user in the database
 	user := models.User{
 		Username:  input.Username,
+		LastName:  input.LastName,
+		FirstName: input.FirstName,
 		Email:     input.Email,
 		Password:  string(hashedPassword),
 		Role:      input.Role,
 		PositionX: x,
 		PositionY: y,
+		SchoolID:  input.SchoolID,
 	}
 
 	if err := database.DB.Create(&user).Error; err != nil {

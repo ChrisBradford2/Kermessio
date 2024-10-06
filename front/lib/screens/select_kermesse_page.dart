@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../blocs/kermesse_bloc.dart';
 import '../blocs/kermesse_event.dart';
@@ -28,19 +28,12 @@ class SelectKermessePageState extends State<SelectKermessePage> {
 
   @override
   void initState() {
-    if (kDebugMode) {
-      print("InitState");
-    }
     super.initState();
     _fetchKermesses();
   }
 
   Future<void> _fetchKermesses() async {
     final authState = BlocProvider.of<AuthBloc>(context).state;
-
-    if (kDebugMode) {
-      print("AuthState: $authState");
-    }
     if (authState is AuthAuthenticated) {
       try {
         final kermesseRepository = KermesseRepository(
@@ -49,17 +42,11 @@ class SelectKermessePageState extends State<SelectKermessePage> {
         );
         final fetchedKermesses = await kermesseRepository.getKermesses();
         if (!mounted) return;
-        if (kDebugMode) {
-          print('Kermesses récupérées: $fetchedKermesses');
-        }
         setState(() {
           kermesses = fetchedKermesses;
           isLoading = false;
         });
       } catch (e) {
-        if (kDebugMode) {
-          print('Erreur lors de la récupération des kermesses: $e');
-        }
         setState(() {
           isLoading = false;
         });
@@ -67,51 +54,89 @@ class SelectKermessePageState extends State<SelectKermessePage> {
           const SnackBar(content: Text('Erreur lors de la récupération des kermesses')),
         );
       }
-    } else {
-      if (kDebugMode) {
-        print('Utilisateur non authentifié');
-      }
-      setState(() {
-        isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Utilisateur non authentifié')),
-      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Sélectionner une kermesse")),
+      appBar: AppBar(
+        title: Text(
+          "Sélectionner une Kermesse",
+          style: GoogleFonts.caveat(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.pinkAccent,
+        centerTitle: true,
+      ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
+          : _buildKermesseList(),
+      backgroundColor: Colors.yellow[100], // Fun background color
+    );
+  }
+
+  Widget _buildKermesseList() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: ListView.builder(
         itemCount: kermesses.length,
         itemBuilder: (context, index) {
           final kermesse = kermesses[index];
-          return ListTile(
-            title: Text(kermesse.name),
+          return GestureDetector(
             onTap: () {
-              // Passer l'ID de la kermesse au BLoC
-              BlocProvider.of<KermesseBloc>(context)
-                  .add(SelectKermesseEvent(kermesseId: kermesse.id));
-
-              final authState = BlocProvider.of<AuthBloc>(context).state;
-              if (authState is AuthAuthenticated) {
-                // Créer un StockRepository
-                final stockRepository = StockRepository(
-                  baseUrl: AppConfig().baseUrl,
-                  token: authState.token,
-                );
-
-                _navigateToRoleBasedView(authState.user, stockRepository);
-              }
+              _onKermesseSelected(kermesse);
             },
+            child: Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              elevation: 5,
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              color: Colors.lightBlueAccent.withOpacity(0.8),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.celebration_rounded,
+                      color: Colors.white,
+                      size: 40,
+                    ),
+                    const SizedBox(width: 20),
+                    Text(
+                      kermesse.name,
+                      style: GoogleFonts.caveat(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           );
         },
       ),
     );
+  }
+
+  void _onKermesseSelected(Kermesse kermesse) {
+    BlocProvider.of<KermesseBloc>(context)
+        .add(SelectKermesseEvent(kermesseId: kermesse.id));
+
+    final authState = BlocProvider.of<AuthBloc>(context).state;
+    if (authState is AuthAuthenticated) {
+      final stockRepository = StockRepository(
+        baseUrl: AppConfig().baseUrl,
+        token: authState.token,
+      );
+
+      _navigateToRoleBasedView(authState.user, stockRepository);
+    }
   }
 
   void _navigateToRoleBasedView(User user, StockRepository stockRepository) {

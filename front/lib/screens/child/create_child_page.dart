@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../blocs/auth_event.dart';
 import '../../repositories/child_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/auth_bloc.dart';
@@ -79,6 +80,7 @@ class CreateChildPageState extends State<CreateChildPage> {
           password: _passwordController.text,
           token: authState.token,  // Parent's token
         );
+
         if (!mounted) return;
 
         setState(() {
@@ -86,10 +88,15 @@ class CreateChildPageState extends State<CreateChildPage> {
         });
 
         if (success) {
+          // On success, refresh user data to include the new child
+          context.read<AuthBloc>().add(AuthRefreshRequested());
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Compte enfant créé avec succès')),
           );
-          Navigator.pop(context);
+
+          // Rediriger vers la page ParentView
+          Navigator.pop(context, true); // On retourne 'true' pour signaler une création réussie
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Erreur lors de la création du compte enfant')),

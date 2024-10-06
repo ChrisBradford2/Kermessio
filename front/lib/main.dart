@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:front/blocs/school_event.dart';
 import 'package:front/repositories/child_repository.dart';
+import 'package:front/repositories/school_repository.dart'; // Import du SchoolRepository
 import 'blocs/child_bloc.dart';
 import 'blocs/kermesse_bloc.dart';
+import 'blocs/school_bloc.dart'; // Import du SchoolBloc
 import 'config/app_config.dart';
 import 'repositories/auth_repository.dart';
 import 'blocs/auth_bloc.dart';
@@ -48,6 +51,20 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<KermesseBloc>(
           create: (context) => KermesseBloc(),
+        ),
+        // Provide SchoolBloc once the user is authenticated and a token is available
+        BlocProvider<SchoolBloc>(
+          create: (context) {
+            final authState = context.read<AuthBloc>().state;
+            if (authState is AuthAuthenticated) {
+              return SchoolBloc(
+                schoolRepository: SchoolRepository(token: authState.token),
+              )..add(FetchSchoolsEvent());
+            }
+            return SchoolBloc(
+              schoolRepository: SchoolRepository(token: ''),
+            );
+          },
         ),
       ],
       child: MaterialApp(

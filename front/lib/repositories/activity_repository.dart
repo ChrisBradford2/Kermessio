@@ -21,6 +21,11 @@ class ActivityRepository {
       body: jsonEncode(activity.toJson()),
     );
 
+    if (kDebugMode) {
+      print('ActivityRepository.createActivity');
+      print (jsonEncode(activity.toJson()));
+    }
+
     if (response.statusCode == 200) {
       return Activity.fromJson(jsonDecode(response.body)['activity']);
     } else {

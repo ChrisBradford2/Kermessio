@@ -68,7 +68,7 @@ class ChildViewState extends State<ChildView> {
       );
       final hasTicket = await tombolaRepository.checkIfUserHasTicket(
         userId: widget.user.id,
-        kermesseId: kermesseState.kermesseId, // kermesseId accessible uniquement dans KermesseSelected
+        kermesseId: kermesseState.kermesseId,
       );
       setState(() {
         hasBoughtTombolaTicket = hasTicket;
@@ -119,6 +119,8 @@ class ChildViewState extends State<ChildView> {
             _buildWelcomeSection(),
             const SizedBox(height: 20),
             _buildTokenDisplay(),
+            const SizedBox(height: 10),
+            _buildPointsDisplay(),
             const SizedBox(height: 20),
             _buildActions(context),
             const SizedBox(height: 20),
@@ -130,7 +132,13 @@ class ChildViewState extends State<ChildView> {
   }
 
   Widget _buildWelcomeSection() {
-    return const Text("Bienvenue dans ton espace !", style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold));
+    return Text(
+        "Bienvenue dans ton espace, ${widget.user.username}!",
+        style: const TextStyle(
+            fontSize: 24.0,
+            fontWeight: FontWeight.bold
+        )
+    );
   }
 
   Widget _buildTokenDisplay() {
@@ -148,7 +156,11 @@ class ChildViewState extends State<ChildView> {
             children: [
               ActivityButton(authState: authState),
               const SizedBox(height: 20),
-              BuyStockButton(stockRepository: widget.stockRepository, user: widget.user),
+              BuyStockButton(
+                stockRepository: widget.stockRepository,
+                user: widget.user,
+                onStockPurchased: _fetchPurchases,
+              ),
               const SizedBox(height: 20),
               BlocBuilder<KermesseBloc, KermesseState>(
                 builder: (context, kermesseState) {
@@ -158,8 +170,7 @@ class ChildViewState extends State<ChildView> {
                       onBuyTicket: () => _buyTombolaTicket(kermesseState.kermesseId),
                     );
                   } else {
-                    return  TombolaButton(hasBoughtTicket: true, onBuyTicket: () {});
-
+                    return TombolaButton(hasBoughtTicket: true, onBuyTicket: () {});
                   }
                 },
               ),
@@ -171,6 +182,14 @@ class ChildViewState extends State<ChildView> {
       },
     );
   }
+
+  Widget _buildPointsDisplay() {
+    return Text(
+      "Ton nombre de points : ${widget.user.points} points",
+      style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+    );
+  }
+
 
   Widget _buildPurchasesSection() {
     return isLoading

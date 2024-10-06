@@ -58,8 +58,12 @@ class ChildRepository {
 
     if (response.statusCode == 200) {
       try {
-        final List<dynamic> childrenJson = json.decode(response.body);
-        return childrenJson.map((json) => User.fromJson(json)).toList();
+        if (response.body.isNotEmpty) {
+          final List<dynamic> childrenJson = json.decode(response.body);
+          return childrenJson.map((json) => User.fromJson(json)).toList();
+        } else {
+          return [];
+        }
       } catch (e) {
         if (kDebugMode) {
           print("Erreur lors du décodage du JSON : $e");

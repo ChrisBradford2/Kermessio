@@ -56,11 +56,99 @@ class OrganizerViewState extends State<OrganizerView> {
     }
   }
 
+  void _showKermesseOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.add),
+              title: const Text('Créer une nouvelle kermesse'),
+              onTap: () async {
+                if (mounted) Navigator.pop(context);
+
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CreateKermessePage(kermesseRepository: _kermesseRepository),
+                  ),
+                );
+
+                if (result != null && result == 'Kermesse créée avec succès') {
+                  if (mounted) {
+                    await _fetchKermesses();
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Kermesse créée avec succès')),
+                    );
+                  }
+                }
+
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.group),
+              title: const Text('Rejoindre une kermesse existante'),
+              onTap: () {
+                if (mounted) Navigator.pop(context);
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const JoinKermessePage(),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
+          : _kermesses.isEmpty
+          ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        CreateKermessePage(kermesseRepository: _kermesseRepository),
+                  ),
+                ).then((result) {
+                  if (result != null && result == 'Kermesse créée avec succès') {
+                    _fetchKermesses(); // Rafraîchir la liste après la création
+                  }
+                });
+              },
+              child: const Text('Créer une nouvelle kermesse'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const JoinKermessePage(),
+                  ),
+                );
+              },
+              child: const Text('Rejoindre une kermesse existante'),
+            ),
+          ],
+        ),
+      )
           : Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
@@ -69,69 +157,45 @@ class OrganizerViewState extends State<OrganizerView> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Text(
-                'Bienvenue dans la vue organisateur',
-                style: TextStyle(fontSize: 24),
-                textAlign: TextAlign.center,
+                'Vos Kermesses :',
+                style: TextStyle(fontSize: 18),
               ),
-              const SizedBox(height: 20),
-              if (_kermesses.isEmpty) ...[
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CreateKermessePage(),
+              const SizedBox(height: 10),
+              ListView.builder(
+                shrinkWrap: true,
+                itemCount: _kermesses.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                    child: ListTile(
+                      title: Text(_kermesses[index].name),
+                      subtitle: Text('ID : ${_kermesses[index].id}'),
+                      trailing: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  KermesseDetailsPage(kermesse: _kermesses[index]),
+                            ),
+                          );
+                        },
+                        child: const Text('Voir Détails'),
                       ),
-                    );
-                  },
-                  child: const Text('Créer une nouvelle kermesse'),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const JoinKermessePage(),
-                      ),
-                    );
-                  },
-                  child: const Text('Rejoindre une kermesse existante'),
-                ),
-              ] else ...[
-                const Text(
-                  'Vos Kermesses :',
-                  style: TextStyle(fontSize: 18),
-                ),
-                const SizedBox(height: 10),
-                ListView.builder(
-                  shrinkWrap: true, // Pour que la ListView ne prenne pas tout l'espace
-                  itemCount: _kermesses.length,
-                  itemBuilder: (context, index) {
-                    return Card(
-                      child: ListTile(
-                        title: Text(_kermesses[index].name),
-                        subtitle: Text('ID : ${_kermesses[index].id}'),
-                        trailing: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => KermesseDetailsPage(kermesse: _kermesses[index]),
-                              ),
-                            );
-                          },
-                          child: const Text('Voir Détails'),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ],
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         ),
       ),
+      floatingActionButton: _kermesses.isNotEmpty
+          ? FloatingActionButton(
+        onPressed: _showKermesseOptions,
+        backgroundColor: Colors.greenAccent,
+        child: const Icon(Icons.add),
+      )
+          : null,
     );
   }
 }

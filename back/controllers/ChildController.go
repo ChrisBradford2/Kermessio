@@ -5,6 +5,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"kermessio/database"
 	"kermessio/models"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -58,6 +59,7 @@ func CreateChild(c *gin.Context) {
 		Password: string(hashedPassword),
 		Role:     "child",        // Role is set as "enfant"
 		ParentID: &parentUser.ID, // Link to the parent
+		SchoolID: parentUser.SchoolID,
 	}
 
 	// Save the child account in the database
@@ -100,6 +102,11 @@ func GetChildren(c *gin.Context) {
 		return
 	}
 
+	if len(children) == 0 {
+		c.JSON(http.StatusOK, []models.PublicChild{})
+		return
+	}
+
 	// Convert the children to public users
 	var publicChildren []models.PublicChild
 	for _, child := range children {
@@ -107,8 +114,11 @@ func GetChildren(c *gin.Context) {
 			Base:     child.Base,
 			Username: child.Username,
 			Tokens:   int(child.Tokens),
+			Points:   child.Points,
 		})
 	}
+
+	log.Println(publicChildren)
 
 	c.JSON(http.StatusOK, publicChildren)
 }
@@ -154,6 +164,7 @@ func GetChild(c *gin.Context) {
 		Base:     child.Base,
 		Username: child.Username,
 		Tokens:   int(child.Tokens),
+		Points:   child.Points,
 	}
 
 	c.JSON(http.StatusOK, publicChild)
@@ -364,9 +375,8 @@ func GetChildInteractions(c *gin.Context) {
 
 	var interactions []models.Interaction
 	if err := database.DB.Where("user_id = ?", childID).
-		Preload("Activity").
-		Preload("Stock").
-		Preload("Stock.User").
+		Preload("Activity.BoothHolder").
+		Preload("Stock.BoothHolder").
 		Find(&interactions).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des interactions"})
 		return

@@ -57,8 +57,9 @@ func CreateParticipation(c *gin.Context) {
 	participation := models.Participation{
 		UserID:     req.UserID,
 		ActivityID: req.ActivityID,
-		Points:     0, // Initialement, les points peuvent être à 0 jusqu'à ce que le vainqueur soit décidé
-		IsWinner:   false,
+		Points:     0,                   // Initialement, les points peuvent être à 0 jusqu'à ce que le vainqueur soit décidé
+		IsWinner:   false,               // Initialement, l'utilisateur n'est pas le vainqueur
+		KermesseID: activity.KermesseID, // Récupérer le KermesseID de l'activité
 	}
 
 	if err := database.DB.Create(&participation).Error; err != nil {
@@ -151,24 +152,39 @@ func UpdateParticipation(c *gin.Context) {
 		return
 	}
 
+	// Récupérer l'utilisateur associé à la participation
+	var user models.User
+	if err := database.DB.First(&user, participation.UserID).Error; err != nil {
+		c.JSON(http.StatusNotFound, models.ErrorResponse{Error: "Utilisateur non trouvé"})
+		return
+	}
+
 	// Déterminer les points à attribuer
 	points := activity.Points
 	if req.IsWinner {
 		points *= 2 // Le gagnant reçoit le double des points
 	}
 
+	// Mettre à jour les points de l'utilisateur
+	user.Points += int(points)
+
 	// Mettre à jour la participation avec les points et le statut de gagnant
 	participation.Points = points
 	participation.IsWinner = req.IsWinner
 
-	// Sauvegarder la mise à jour
+	// Sauvegarder la mise à jour de la participation et de l'utilisateur
 	if err := database.DB.Save(&participation).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Erreur lors de la mise à jour de la participation"})
 		return
 	}
 
+	if err := database.DB.Save(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Erreur lors de la mise à jour des points de l'utilisateur"})
+		return
+	}
+
 	c.JSON(http.StatusOK, models.JSONResponse{
-		Message: "Participation mise à jour avec succès",
+		Message: "Participation et points utilisateur mis à jour avec succès",
 		Data:    participation,
 	})
 }

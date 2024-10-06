@@ -6,6 +6,7 @@ class Activity {
   final int price;
   final int points;
   final int boothHolderId;
+  final int kermesseId;  // Ajout du champ KermesseID
 
   Activity({
     required this.id,
@@ -15,6 +16,7 @@ class Activity {
     required this.price,
     required this.points,
     required this.boothHolderId,
+    required this.kermesseId,
   });
 
   factory Activity.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class Activity {
       price: json['price'],
       points: json['points'],
       boothHolderId: json['booth_holder_id'],
+      kermesseId: json['kermesse_id'],
     );
   }
 
@@ -38,6 +41,7 @@ class Activity {
       'price': price,
       'points': points,
       'booth_holder_id': boothHolderId,
+      'kermesse_id': kermesseId,
     };
   }
 }

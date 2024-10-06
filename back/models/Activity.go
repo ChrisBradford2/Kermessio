@@ -15,9 +15,10 @@ type Activity struct {
 }
 
 type CreateActivityRequest struct {
-	Name   string `json:"name" binding:"required"`
-	Type   string `json:"type" binding:"required"`
-	Emoji  string `json:"emoji"`
-	Price  uint   `json:"price" binding:"required"`
-	Points uint   `json:"points" binding:"required"`
+	Name       string `json:"name" binding:"required"`
+	Type       string `json:"type" binding:"required"`
+	Emoji      string `json:"emoji"`
+	Price      uint   `json:"price" binding:"required"`
+	Points     uint   `json:"points" binding:"required"`
+	KermesseID uint   `json:"kermesse_id" binding:"required"`
 }

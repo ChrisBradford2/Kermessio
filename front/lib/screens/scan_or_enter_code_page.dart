@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:front/config/app_config.dart';
 import 'package:front/blocs/auth_bloc.dart';
@@ -20,7 +19,7 @@ class ScanAndValidateOrderPageState extends State<ScanAndValidateOrderPage> {
   String? _message;
   Map<String, dynamic>? _orderData;
 
-  // Fonction pour scanner le QR code
+/*
   Future<void> _scanQRCode() async {
     String scannedCode;
     try {
@@ -42,6 +41,7 @@ class ScanAndValidateOrderPageState extends State<ScanAndValidateOrderPage> {
       });
     }
   }
+ */
 
   // Fonction pour valider le code scanné ou entré et afficher la commande
   Future<void> _validateCode(String code) async {
@@ -138,7 +138,7 @@ class ScanAndValidateOrderPageState extends State<ScanAndValidateOrderPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             ElevatedButton(
-              onPressed: _scanQRCode,
+              onPressed: null,
               child: const Text('Scanner un QR code'),
             ),
             const SizedBox(height: 20),

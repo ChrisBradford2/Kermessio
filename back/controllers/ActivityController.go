@@ -48,6 +48,7 @@ func CreateActivity(c *gin.Context) {
 		Price:         req.Price,
 		Points:        req.Points,
 		BoothHolderID: user.ID,
+		KermesseID:    req.KermesseID,
 	}
 
 	// Save the new activity to the database

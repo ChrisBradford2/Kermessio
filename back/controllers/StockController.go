@@ -95,7 +95,7 @@ func GetStocks(c *gin.Context) {
 		return
 	}
 
-	if err := database.DB.Where("user_id = ?", currentUser.ID).Find(&stocks).Error; err != nil {
+	if err := database.DB.Where("booth_holder_id = ?", currentUser.ID).Find(&stocks).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des stocks"})
 		return
 	}
@@ -150,7 +150,7 @@ func GetAllStocks(c *gin.Context) {
 
 	if err := database.DB.Table("stocks").
 		Select("stocks.*, users.username as booth_holder_username").
-		Joins("left join users on users.id = stocks.user_id").
+		Joins("left join users on users.id = stocks.booth_holder_id").
 		Where("users.role = ? AND stocks.quantity > 0", "booth_holder").
 		Limit(limit).Offset(offset).
 		Find(&stocksWithUsers).Error; err != nil {

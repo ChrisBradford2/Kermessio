@@ -7,8 +7,14 @@ import '../../screens/buy_stock_page.dart';
 class BuyStockButton extends StatelessWidget {
   final StockRepository stockRepository;
   final User user;
+  final VoidCallback onStockPurchased;
 
-  const BuyStockButton({required this.stockRepository, required this.user, super.key});
+  const BuyStockButton({
+    required this.stockRepository,
+    required this.user,
+    required this.onStockPurchased,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +25,11 @@ class BuyStockButton extends StatelessWidget {
           MaterialPageRoute(
             builder: (context) => BuyStockPage(stockRepository: stockRepository, user: user),
           ),
-        );
+        ).then((result) {
+          if (result != null && result == 'Achat réussi') {
+            onStockPurchased();
+          }
+        });
       },
       child: const Text("Acheter un consommable"),
     );

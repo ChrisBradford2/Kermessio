@@ -10,11 +10,12 @@ class SchoolRepository {
 
   SchoolRepository({required this.token});
 
-  // Récupérer la liste des écoles
   Future<List<School>> getSchools() async {
     final url = '${AppConfig().baseUrl}/schools';
 
-    print('token: $token');
+    if (kDebugMode) {
+      print('token: $token');
+    }
 
     try {
       final response = await http.get(

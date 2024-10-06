@@ -5,10 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/auth_bloc.dart';
 import '../blocs/auth_event.dart';
 import '../blocs/auth_state.dart';
-import '../blocs/school_bloc.dart'; // Bloc to fetch the list of schools
+import '../blocs/school_bloc.dart';
 import '../blocs/school_event.dart';
 import '../blocs/school_state.dart';
-import '../models/school_model.dart'; // School model
+import '../models/school_model.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});

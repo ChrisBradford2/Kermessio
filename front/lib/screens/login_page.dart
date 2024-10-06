@@ -20,7 +20,7 @@ class LoginPage extends StatelessWidget {
         children: [
           Positioned.fill(
             child: Image.asset(
-              kIsWeb ? 'images/kermesse_background_desktop.gif' : 'images/kermesse_background_mobile.gif',
+              kIsWeb ? 'assets/images/kermesse_background_desktop.gif' : 'assets/images/kermesse_background_mobile.png',
               fit: BoxFit.cover,
               color: Colors.black.withOpacity(0.3),
               colorBlendMode: BlendMode.darken,

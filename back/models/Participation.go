@@ -19,5 +19,5 @@ type CreateParticipationRequest struct {
 
 type UpdateParticipationRequest struct {
 	ParticipationID uint `json:"participation_id" binding:"required" example:"1"`
-	IsWinner        bool `json:"is_winner" binding:"required" example:"true"`
+	IsWinner        bool `json:"is_winner" example:"true"`
 }

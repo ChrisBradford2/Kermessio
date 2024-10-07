@@ -19,30 +19,6 @@ class ScanAndValidateOrderPageState extends State<ScanAndValidateOrderPage> {
   String? _message;
   Map<String, dynamic>? _orderData;
 
-/*
-  Future<void> _scanQRCode() async {
-    String scannedCode;
-    try {
-      scannedCode = await FlutterBarcodeScanner.scanBarcode(
-        '#ff6666', // Couleur du bouton de scan
-        'Annuler', // Texte du bouton d'annulation
-        true,      // Afficher le flash
-        ScanMode.QR,
-      );
-      if (scannedCode != '-1') {
-        _validateCode(scannedCode);
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error scanning code: $e');
-      }
-      setState(() {
-        _message = 'Erreur lors du scan';
-      });
-    }
-  }
- */
-
   // Fonction pour valider le code scanné ou entré et afficher la commande
   Future<void> _validateCode(String code) async {
     try {
@@ -65,11 +41,16 @@ class ScanAndValidateOrderPageState extends State<ScanAndValidateOrderPage> {
         if (response.statusCode == 200) {
           final orderData = jsonDecode(response.body);
           if (kDebugMode) {
-            print (orderData);
+            print(orderData);
           }
           setState(() {
             _orderData = orderData;
-            _message = null;
+            if (_orderData!['status'] == 'approved') {
+              _message = 'Erreur : cette commande a déjà été validée';
+              _orderData = null;
+            } else {
+              _message = null;
+            }
           });
         } else {
           setState(() {
@@ -131,49 +112,103 @@ class ScanAndValidateOrderPageState extends State<ScanAndValidateOrderPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Scanner ou entrer un code'),
+        backgroundColor: Colors.teal,
+        centerTitle: true,
+        elevation: 4.0,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
               onPressed: null,
-              child: const Text('Scanner un QR code'),
+              child: const Text('Scanner un QR code', style: TextStyle(fontSize: 16)),
             ),
             const SizedBox(height: 20),
             TextField(
               controller: _codeController,
-              decoration: const InputDecoration(labelText: 'Entrer le code'),
+              decoration: InputDecoration(
+                labelText: 'Entrer le code',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                filled: true,
+                fillColor: Colors.grey.shade100,
+              ),
+              textCapitalization: TextCapitalization.characters,
             ),
             const SizedBox(height: 20),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
               onPressed: () {
+                _codeController.text = _codeController.text.toUpperCase();
                 _validateCode(_codeController.text);
               },
-              child: const Text('Valider le code'),
+              child: const Text('Valider le code', style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+              )),
             ),
             const SizedBox(height: 20),
-
             if (_orderData != null)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Article: ${_orderData!['stock']['item_name']}'),
-                  Text('Quantité: ${_orderData!['quantity']}'),
-                  Text('Prix: ${_orderData!['price']} jetons'),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _validateOrder,
-                    child: const Text('Valider la commande'),
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Article: ${_orderData!['stock']['item_name']}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Text('Quantité: ${_orderData!['quantity']}', style: const TextStyle(fontSize: 16)),
+                      const SizedBox(height: 8),
+                      Text('Prix: ${_orderData!['price']} jetons', style: const TextStyle(fontSize: 16)),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: _validateOrder,
+                        child: const Text('Valider la commande', style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                        )),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-
             if (_message != null)
-              Text(
-                _message!,
-                style: const TextStyle(color: Colors.green, fontSize: 18),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: Text(
+                  _message!,
+                  style: TextStyle(
+                    color: _message == 'Code invalide' ? Colors.red : Colors.black,
+                    fontSize: 18,
+                  ),
+                ),
               ),
           ],
         ),

@@ -49,9 +49,11 @@ class BuyTokensPageState extends State<BuyTokensPage> {
                 );
               }).toList(),
               onChanged: (newValue) {
-                setState(() {
-                  _selectedAmount = newValue!;
-                });
+                if (newValue != null) {
+                  setState(() {
+                    _selectedAmount = newValue;
+                  });
+                }
               },
             ),
             const SizedBox(height: 20),
@@ -164,11 +166,12 @@ class BuyTokensPageState extends State<BuyTokensPage> {
           const SnackBar(content: Text('Paiement réussi ! Vos jetons ont été ajoutés.')),
         );
 
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushReplacementNamed(context, '/');
 
         context.read<AuthBloc>().add(AuthRefreshRequested()); // Déclencher la mise à jour des tokens
       }
     } catch (e) {
+      print('Error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erreur lors du paiement : $e')),

@@ -82,6 +82,9 @@ class AddActivityPageState extends State<AddActivityPage> {
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
       validator: (value) {
         if (label == 'Emoji (facultatif)') {
+          if (value != null && value.length > 1) {
+            return 'Veuillez entrer un seul caractère';
+          }
           return null;
         }
         if (value == null || value.isEmpty) {

@@ -9,6 +9,8 @@ class ChildRepository {
 
   Future<bool> createChildAccount({
     required String username,
+    required String firstName,
+    required String lastName,
     required String password,
     required String token,
   }) async {
@@ -21,6 +23,8 @@ class ChildRepository {
       },
       body: json.encode({
         'username': username,
+        'first_name': firstName,
+        'last_name': lastName,
         'password': password,
       }),
     );

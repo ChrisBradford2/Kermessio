@@ -14,7 +14,10 @@ class CreateChildPage extends StatefulWidget {
 
 class CreateChildPageState extends State<CreateChildPage> {
   final _usernameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   final ChildRepository childRepository = ChildRepository();
@@ -41,12 +44,46 @@ class CreateChildPageState extends State<CreateChildPage> {
               ),
               const SizedBox(height: 16.0),
               TextFormField(
+                controller: _firstNameController,
+                decoration: const InputDecoration(labelText: 'Prénom de l\'enfant'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Veuillez entrer un prénom';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16.0),
+              TextFormField(
+                controller: _lastNameController,
+                decoration: const InputDecoration(labelText: 'Nom de famille de l\'enfant'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Veuillez entrer un nom de famille';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16.0),
+              TextFormField(
                 controller: _passwordController,
                 decoration: const InputDecoration(labelText: 'Mot de passe'),
                 obscureText: true,
                 validator: (value) {
                   if (value == null || value.length < 6) {
                     return 'Le mot de passe doit contenir au moins 6 caractères';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16.0),
+              TextFormField(
+                controller: _confirmPasswordController,
+                decoration: const InputDecoration(labelText: 'Confirmer le mot de passe'),
+                obscureText: true,
+                validator: (value) {
+                  if (value != _passwordController.text) {
+                    return 'Les mots de passe ne correspondent pas';
                   }
                   return null;
                 },
@@ -77,6 +114,8 @@ class CreateChildPageState extends State<CreateChildPage> {
         // Call the ChildRepository to create the child account
         final success = await childRepository.createChildAccount(
           username: _usernameController.text,
+          firstName: _firstNameController.text,
+          lastName: _lastNameController.text,
           password: _passwordController.text,
           token: authState.token,  // Parent's token
         );

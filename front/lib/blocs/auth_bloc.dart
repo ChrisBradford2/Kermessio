@@ -86,7 +86,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final currentState = state;
     if (currentState is AuthAuthenticated) {
       try {
-        // Récupérer les informations mises à jour de l'utilisateur
         final userWithToken =
             await authRepository.getUserDetails(currentState.token);
         final updatedUser = User.fromJson(userWithToken['user']);

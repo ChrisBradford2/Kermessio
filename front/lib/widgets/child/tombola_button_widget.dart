@@ -10,11 +10,19 @@ class TombolaButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: hasBoughtTicket ? null : onBuyTicket,
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all<Color>(
+          hasBoughtTicket ? Colors.grey : Colors.blue,
+        ),
+      ),
       child: Text(
         hasBoughtTicket
             ? "Ticket de tombola déjà acheté"
             : "Acheter un ticket de tombola (10 jetons)",
-        style: TextStyle(color: hasBoughtTicket ? Colors.grey : Colors.white),
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }

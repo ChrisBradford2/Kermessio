@@ -180,8 +180,9 @@ class ActivityDetailsPageState extends State<ActivityDetailsPage> {
           trailingIcon = Icons.more_vert;
         }
 
+        print(participation);
         return ListTile(
-          title: Text('Participant ${participation.userId}'),
+          title: Text(participation.user.username),
           subtitle: Text('Points actuels : ${participation.points}'),
           trailing: IconButton(
             icon: Icon(trailingIcon),

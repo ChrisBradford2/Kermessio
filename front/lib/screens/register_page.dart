@@ -23,6 +23,7 @@ class RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   String? _selectedRole;
@@ -75,18 +76,40 @@ class RegisterPageState extends State<RegisterPage> {
                     controller: _firstNameController,
                     labelText: 'Prénom',
                     icon: Icons.person,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Veuillez entrer un prénom';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   _buildTextField(
                     controller: _lastNameController,
                     labelText: 'Nom de famille',
                     icon: Icons.person_outline,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Veuillez entrer un nom de famille';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   _buildTextField(
                     controller: _usernameController,
                     labelText: 'Nom d\'utilisateur',
                     icon: Icons.account_circle,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Veuillez entrer un nom d\'utilisateur';
+                      }
+                      final usernameRegex = RegExp(r'^[a-zA-Z0-9_-]+$');
+                      if (!usernameRegex.hasMatch(value)) {
+                        return 'Le nom d\'utilisateur ne peut contenir que des lettres, des chiffres, des underscores, et des tirets.';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   _buildTextField(
@@ -94,6 +117,16 @@ class RegisterPageState extends State<RegisterPage> {
                     labelText: 'Email',
                     icon: Icons.email,
                     keyboardType: TextInputType.emailAddress,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Veuillez entrer un email';
+                      }
+                      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                      if (!emailRegex.hasMatch(value)) {
+                        return 'Veuillez entrer un email valide';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   _buildTextField(
@@ -101,6 +134,31 @@ class RegisterPageState extends State<RegisterPage> {
                     labelText: 'Mot de passe',
                     icon: Icons.lock,
                     obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Veuillez entrer un mot de passe';
+                      }
+                      if (value.length < 6) {
+                        return 'Le mot de passe doit contenir au moins 6 caractères';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _confirmPasswordController,
+                    labelText: 'Confirmer le mot de passe',
+                    icon: Icons.lock,
+                    obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Veuillez confirmer votre mot de passe';
+                      }
+                      if (value != _passwordController.text) {
+                        return 'Les mots de passe ne correspondent pas';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   _buildSchoolAutocomplete(context),
@@ -155,6 +213,7 @@ class RegisterPageState extends State<RegisterPage> {
     required IconData icon,
     bool obscureText = false,
     TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
   }) {
     return TextFormField(
       controller: controller,
@@ -167,12 +226,13 @@ class RegisterPageState extends State<RegisterPage> {
       ),
       obscureText: obscureText,
       keyboardType: keyboardType,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Veuillez entrer $labelText';
-        }
-        return null;
-      },
+      validator: validator ??
+              (value) {
+            if (value == null || value.isEmpty) {
+              return 'Veuillez entrer $labelText';
+            }
+            return null;
+          },
     );
   }
 

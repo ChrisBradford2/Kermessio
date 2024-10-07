@@ -34,7 +34,7 @@ class AuthRepository {
       if (kDebugMode) {
         print(response.body);
       }
-      throw Exception("Erreur de connexion");
+      throw Exception('Nom d\'utilisateur ou mot de passe incorrect');
     }
   }
 

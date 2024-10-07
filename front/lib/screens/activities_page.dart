@@ -58,9 +58,7 @@ class ActivitiesPageState extends State<ActivitiesPage> {
           setState(() {
             widget.user.tokens -= activity.price;
           });
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Vous avez participé à l\'activité ${activity.name} pour ${activity.price} jetons'),
-          ));
+          Navigator.pop(context, 'Vous avez participé à l\'activité ${activity.name} pour ${activity.price} jetons');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text('Erreur lors de la participation'),

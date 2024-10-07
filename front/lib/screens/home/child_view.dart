@@ -88,6 +88,9 @@ class ChildViewState extends State<ChildView> {
           final response = await tombolaRepository.buyTicket(widget.user.id, widget.user.role, kermesseId);
           if (!mounted) return;
           if (response['success']) {
+            setState(() {
+              hasBoughtTombolaTicket = true;
+            });
             BlocProvider.of<AuthBloc>(context).add(AuthRefreshRequested());
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Ticket de tombola acheté avec succès!'), backgroundColor: Colors.green),
@@ -142,9 +145,20 @@ class ChildViewState extends State<ChildView> {
   }
 
   Widget _buildTokenDisplay() {
-    return Text(
-      "Ton solde de jetons : ${widget.user.tokens} jetons",
-      style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, authState) {
+        if (authState is AuthAuthenticated) {
+          return Text(
+            "Ton solde de jetons : ${authState.user.tokens} jetons",
+            style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+          );
+        } else {
+          return const Text(
+            "Ton solde de jetons : - jetons",
+            style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+          );
+        }
+      },
     );
   }
 

@@ -56,6 +56,8 @@ func CreateChild(c *gin.Context) {
 	// Create the child account linked to the parent
 	child := models.User{
 		Username: input.Username,
+		FirstName: input.FirstName,
+		LastName:  input.LastName,
 		Password: string(hashedPassword),
 		Role:     "child",        // Role is set as "enfant"
 		ParentID: &parentUser.ID, // Link to the parent

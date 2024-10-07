@@ -45,8 +45,10 @@ type UserLogin struct {
 }
 
 type ChildRequest struct {
-	Username string `json:"username" binding:"required" example:"jdoe"`
-	Password string `json:"password" binding:"required,min=6" example:"password"`
+	Username  string `json:"username" binding:"required" example:"jdoe"`
+	FirstName string `json:"first_name" binding:"required" example:"John"`
+	LastName  string `json:"last_name" binding:"required" example:"Doe"`
+	Password  string `json:"password" binding:"required,min=6" example:"password"`
 }
 
 type ChildRequestResponse struct {

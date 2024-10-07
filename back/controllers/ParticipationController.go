@@ -106,7 +106,7 @@ func GetParticipationsByActivity(c *gin.Context) {
 	}
 
 	var participations []models.Participation
-	if err := database.DB.Where("activity_id = ?", activityID).Find(&participations).Error; err != nil {
+	if err := database.DB.Preload("User").Where("activity_id = ?", activityID).Find(&participations).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des participations"})
 		return
 	}

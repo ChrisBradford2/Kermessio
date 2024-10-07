@@ -4,6 +4,7 @@ package models
 type Participation struct {
 	Base
 	UserID     uint     `json:"user_id" gorm:"not null" binding:"required" example:"1"`
+	User       User     `json:"user" gorm:"foreignKey:UserID"`
 	ActivityID uint     `json:"activity_id" gorm:"not null" binding:"required" example:"1"`
 	Points     uint     `json:"points" gorm:"not null" binding:"required" example:"10"`
 	IsWinner   bool     `json:"is_winner" gorm:"not null" example:"false"`

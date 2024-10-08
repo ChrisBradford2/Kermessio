@@ -104,7 +104,7 @@ class RegisterPageState extends State<RegisterPage> {
                       if (value == null || value.isEmpty) {
                         return 'Veuillez entrer un nom d\'utilisateur';
                       }
-                      final usernameRegex = RegExp(r'^[a-zA-Z0-9_-]+$');
+                      final usernameRegex = RegExp(r'^[a-zA-Z0-9._-]+$');
                       if (!usernameRegex.hasMatch(value)) {
                         return 'Le nom d\'utilisateur ne peut contenir que des lettres, des chiffres, des underscores, et des tirets.';
                       }
@@ -121,7 +121,7 @@ class RegisterPageState extends State<RegisterPage> {
                       if (value == null || value.isEmpty) {
                         return 'Veuillez entrer un email';
                       }
-                      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                      final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
                       if (!emailRegex.hasMatch(value)) {
                         return 'Veuillez entrer un email valide';
                       }

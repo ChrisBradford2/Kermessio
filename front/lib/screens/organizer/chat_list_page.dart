@@ -8,6 +8,8 @@ import 'dart:convert';
 
 import '../../blocs/auth_bloc.dart';
 import '../../blocs/auth_state.dart';
+import '../../blocs/kermesse_bloc.dart';
+import '../../blocs/kermesse_state.dart';
 import '../chat_details_page.dart';
 
 class ChatListPage extends StatefulWidget {
@@ -46,6 +48,9 @@ class ChatListPageState extends State<ChatListPage> {
 
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
+          if (kDebugMode) {
+            print(data);
+          }
           setState(() {
             _conversations = data['conversations'] != null ? List.from(data['conversations']) : [];
             _isLoading = false;
@@ -82,9 +87,6 @@ class ChatListPageState extends State<ChatListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Conversations'),
-      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _conversations.isEmpty
@@ -122,11 +124,19 @@ class ChatListPageState extends State<ChatListPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Naviguer vers la page de sélection des booth_holders
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const SelectUserForChatPage(isOrganizer: true)
+              builder: (context) {
+                final kermesseState = context.read<KermesseBloc>().state;
+                if (kermesseState is KermesseSelected) {
+                  return SelectUserForChatPage(isOrganizer: true);
+                } else {
+                  return Scaffold(
+                    body: Center(child: Text('Veuillez sélectionner une kermesse.')),
+                  );
+                }
+              },
             ),
           );
         },

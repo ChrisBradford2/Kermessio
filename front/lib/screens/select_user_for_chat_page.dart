@@ -27,6 +27,11 @@ class SelectUserForChatPageState extends State<SelectUserForChatPage> {
   @override
   void initState() {
     super.initState();
+    final kermesseState = context.read<KermesseBloc>().state;
+    print('Kermesse state: $kermesseState');
+    if (kermesseState is KermesseSelected) {
+      _fetchUsers(kermesseState.kermesseId);
+    }
   }
 
   Future<void> _fetchUsers(int kermesseId) async {
@@ -51,6 +56,9 @@ class SelectUserForChatPageState extends State<SelectUserForChatPage> {
 
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
+          if (kDebugMode) {
+            print(data);
+          }
           setState(() {
             _users = widget.isOrganizer ? data['stands'] : data['organizers'];
             _isLoading = false;
@@ -70,6 +78,7 @@ class SelectUserForChatPageState extends State<SelectUserForChatPage> {
         setState(() {
           _isLoading = false;
         });
+        print('Error fetching users: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erreur : $e')),
         );
@@ -88,8 +97,6 @@ class SelectUserForChatPageState extends State<SelectUserForChatPage> {
       body: BlocBuilder<KermesseBloc, KermesseState>(
         builder: (context, kermesseState) {
           if (kermesseState is KermesseSelected) {
-            _fetchUsers(kermesseState.kermesseId);
-
             return _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : ListView.builder(

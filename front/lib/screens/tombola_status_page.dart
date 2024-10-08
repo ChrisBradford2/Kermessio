@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:front/config/app_config.dart';
 import 'package:http/http.dart' as http;
@@ -17,6 +18,7 @@ class TombolaStatusPage extends StatefulWidget {
 class TombolaStatusPageState extends State<TombolaStatusPage> {
   bool isLoading = true;
   bool isWinner = false;
+  bool isDrawn = false;
   String? prize;
   String? statusMessage;
 
@@ -37,10 +39,14 @@ class TombolaStatusPageState extends State<TombolaStatusPage> {
           });
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        if (kDebugMode) {
+          print(data);
+        }
         setState(() {
           isWinner = data['is_winner'] ?? false;
+          isDrawn = data['is_drawn'] ?? false;
           prize = data['prize'];
-          statusMessage = isWinner ? 'Félicitations ! Vous avez gagné : $prize' : 'Désolé, vous n\'avez pas gagné cette fois-ci.';
+          statusMessage = !isDrawn ? data['message'] : (isWinner ? 'Félicitations ! Vous avez gagné : $prize' : 'Désolé, vous n\'avez pas gagné cette fois-ci.');
           isLoading = false;
         });
       } else {
@@ -57,12 +63,12 @@ class TombolaStatusPageState extends State<TombolaStatusPage> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Statut de la Tombola'),
-        backgroundColor: Colors.teal,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -71,21 +77,44 @@ class TombolaStatusPageState extends State<TombolaStatusPage> {
             : Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (statusMessage != null)
-              Text(
-                statusMessage!,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
               ),
+              elevation: 5,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  statusMessage ?? '',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
             const SizedBox(height: 20),
-            if (!isLoading && !isWinner)
-              const Text(
-                'Merci d\'avoir participé. Bonne chance pour la prochaine fois !',
-                style: TextStyle(fontSize: 16),
+            if (!isWinner && isDrawn)
+              const Center(
+                child: Text(
+                  'Merci d\'avoir participé. Bonne chance pour la prochaine fois !',
+                  style: TextStyle(fontSize: 16),
+                ),
               ),
             if (isWinner && prize != null)
-              Text(
-                'Votre lot : $prize',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              Center(
+                child: Column(
+                  children: [
+                    const Icon(Icons.emoji_events, color: Colors.amber, size: 100),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Félicitations ! Vous avez gagné :',
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      prize!,
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.teal),
+                    ),
+                  ],
+                ),
               ),
           ],
         ),

@@ -45,9 +45,11 @@ class TombolaManagementPageState extends State<TombolaManagementPage> {
         );
 
         if (response.statusCode == 200) {
+          print(response.body);
           setState(() {
             _tombolaData = json.decode(response.body);
             _isDrawn = _tombolaData!['drawn'];
+            _winner = _tombolaData!['winner'];
             _isLoading = false;
           });
         } else {

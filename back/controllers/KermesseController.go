@@ -63,7 +63,14 @@ func CreateKermesse(c *gin.Context) {
 		return
 	}
 
+
 	invitationCode := generateInvitationCode(kermesse.ID)
+	if err := database.DB.Model(&kermesse).Update("invitation_code", invitationCode).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la mise à jour du code d'invitation"})
+		return
+	}
+
+	kermesse.InvitationCode = invitationCode
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":         "Kermesse créée avec succès",
@@ -73,6 +80,16 @@ func CreateKermesse(c *gin.Context) {
 	})
 }
 
+// JoinKermesse godoc
+// @Summary Join a kermesse
+// @Description Join a kermesse
+// @Tags kermesses
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param invitation_code body string true "Invitation code"
+// @Success 200 {object} models.Kermesse
+// @Router /kermesses/join [post]
 func JoinKermesse(c *gin.Context) {
 	var req struct {
 		InvitationCode string `json:"invitation_code" binding:"required"`

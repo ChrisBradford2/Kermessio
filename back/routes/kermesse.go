@@ -11,6 +11,7 @@ func KermesseRoutes(r *gin.Engine) {
 	protected.Use(middleware.AuthMiddleware())
 	{
 		protected.POST("", controllers.CreateKermesse)
+		protected.POST("/join", controllers.JoinKermesse)
 		protected.GET("", controllers.GetUserKermesses)
 	}
 }

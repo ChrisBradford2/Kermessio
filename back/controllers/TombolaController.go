@@ -216,6 +216,9 @@ func GetTombolaStatus(c *gin.Context) {
 		"prize": prize,
 		"is_drawn": tombola.Drawn,
 		"message": func() string {
+			if !tombola.Drawn {
+				return "Le tirage n'a pas encore eu lieu. Veuillez revenir plus tard."
+			}
 			if isWinner {
 				return "Félicitations ! Vous avez gagné."
 			}

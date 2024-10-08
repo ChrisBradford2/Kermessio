@@ -214,6 +214,7 @@ func GetTombolaStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"is_winner": isWinner,
 		"prize": prize,
+		"is_drawn": tombola.Drawn,
 		"message": func() string {
 			if isWinner {
 				return "Félicitations ! Vous avez gagné."

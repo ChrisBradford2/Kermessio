@@ -26,43 +26,45 @@ type Message struct {
 }
 
 func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	defer func(conn *websocket.Conn) {
-		if err := conn.Close(); err != nil {
-			log.Printf("Error closing connection: %v", err)
-		}
-	}(conn)
+    log.Println("Attempting WebSocket upgrade...")
+    conn, err := upgrader.Upgrade(w, r, nil)
+    if err != nil {
+        log.Println("WebSocket upgrade error:", err)
+        http.Error(w, "Could not upgrade WebSocket", http.StatusBadRequest)
+        return
+    }
+    log.Println("WebSocket connection established")
 
-	clients[conn] = true
+    defer func(conn *websocket.Conn) {
+        if err := conn.Close(); err != nil {
+            log.Printf("Error closing connection: %v", err)
+        }
+    }(conn)
 
-	// Listen for messages
-	for {
-		var chatMessage models.ChatMessage
-		err := conn.ReadJSON(&chatMessage)
-		if err != nil {
-			log.Printf("Error: %v", err)
-			delete(clients, conn)
-			break
-		}
+    clients[conn] = true
 
-		// Enregistrer le message dans la base de données
-		if err := database.DB.Create(&chatMessage).Error; err != nil {
-			log.Printf("Error saving message: %v", err)
-		}
+    // Ecouter les messages
+    for {
+        var chatMessage models.ChatMessage
+        err := conn.ReadJSON(&chatMessage)
+        if err != nil {
+            log.Printf("WebSocket read error: %v", err)
+            delete(clients, conn)
+            break
+        }
 
-		// Convertir `ChatMessage` en `Message` pour le broadcasting
-		broadcastMessage := Message{
-			Sender:  chatMessage.Sender.Username, // Assuming `Sender` is of type `User`
-			Message: chatMessage.Message,
-		}
+        // Enregistrer le message dans la base de données
+        if err := database.DB.Create(&chatMessage).Error; err != nil {
+            log.Printf("Error saving message: %v", err)
+        }
 
-		// Broadcast le message à tous les clients
-		broadcast <- broadcastMessage
-	}
+        // Broadcast le message
+        broadcastMessage := Message{
+            Sender:  chatMessage.Sender.Username,
+            Message: chatMessage.Message,
+        }
+        broadcast <- broadcastMessage
+    }
 }
 
 func HandleMessages() {

@@ -17,50 +17,38 @@ func GetConversations(c *gin.Context) {
 
 	user := currentUser.(models.User)
 
-	// Vérifier le rôle de l'utilisateur
-	var query string
 	var conversations []struct {
 		UserID      uint   `json:"user_id"`
 		Username    string `json:"username"`
 		LastMessage string `json:"last_message"`
 	}
 
-	// Si l'utilisateur est un organisateur
-	if user.Role == "organizer" {
-		query = `
-			SELECT DISTINCT ON (receiver_id)
-				receiver_id AS user_id,
-				users.username AS username,
-				chat_messages.message AS last_message
-			FROM chat_messages
-			JOIN users ON chat_messages.receiver_id = users.id
-			WHERE chat_messages.sender_id = ?
-			ORDER BY receiver_id, chat_messages.created_at DESC
-		`
-	} else if user.Role == "booth_holder" { // Si l'utilisateur est un teneur de stand
-		query = `
-			SELECT DISTINCT ON (sender_id)
-				sender_id AS user_id,
-				users.username AS username,
-				chat_messages.message AS last_message
-			FROM chat_messages
-			JOIN users ON chat_messages.sender_id = users.id
-			WHERE chat_messages.receiver_id = ?
-			ORDER BY sender_id, chat_messages.created_at DESC
-		`
-	} else {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Rôle utilisateur non pris en charge"})
-		return
-	}
+	query := `
+		SELECT 
+			CASE 
+				WHEN chat_messages.sender_id = ? THEN chat_messages.receiver_id
+				ELSE chat_messages.sender_id
+			END AS user_id, 
+			users.username AS username, 
+			chat_messages.message AS last_message
+		FROM 
+			chat_messages
+		JOIN 
+			users ON users.id = CASE 
+									WHEN chat_messages.sender_id = ? THEN chat_messages.receiver_id
+									ELSE chat_messages.sender_id
+								END
+		WHERE 
+			chat_messages.sender_id = ? OR chat_messages.receiver_id = ?
+		ORDER BY 
+			chat_messages.created_at DESC
+	`
 
-	err := database.DB.Raw(query, user.ID).Scan(&conversations).Error
-
+	err := database.DB.Raw(query, user.ID, user.ID, user.ID, user.ID).Scan(&conversations).Error
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des conversations"})
 		return
 	}
-
-	c.JSON(http.StatusOK, gin.H{"conversations": conversations})
 }
 
 func GetChatHistory(c *gin.Context) {

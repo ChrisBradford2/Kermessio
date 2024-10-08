@@ -38,8 +38,21 @@ func GetUserDetails(c *gin.Context) {
 // @Failure 500 {object} gin.H
 // @Router /stands [get]
 func GetStands(c *gin.Context) {
+	currentUser, exists := c.Get("currentUser")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non authentifié"})
+		return
+	}
+
+	user := currentUser.(models.User)
+
+	if user.Role != "organizer" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Vous n'êtes pas autorisé à accéder à cette ressource"})
+		return
+	}
+
 	var boothHolders []models.User
-	if err := database.DB.Where("role = ?", "booth_holder").
+	if err := database.DB.Where("role = ? AND school_id = ?", "booth_holder", user.SchoolID).
 		Preload("Stocks").
 		Find(&boothHolders).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des stands"})
@@ -75,8 +88,24 @@ func GetOrganizersByKermesseID(c *gin.Context) {
 }
 
 func GetPointsRanking(c *gin.Context) {
+	currentUser, exists := c.Get("currentUser")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non authentifié"})
+		return
+	}
+
+	user := currentUser.(models.User)
+
+	if user.Role != "organizer" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Vous n'êtes pas autorisé à accéder à cette ressource"})
+		return
+	}
+
 	var users []models.User
-	err := database.DB.Where("role = ?", "child").Order("points desc").Find(&users).Error
+	err := database.DB.Where("role = ? AND school_id = ?", "child", user.SchoolID).
+		Order("points desc").
+		Find(&users).
+		Error
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération du classement"})
 		return

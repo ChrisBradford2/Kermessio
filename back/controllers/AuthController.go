@@ -3,16 +3,18 @@ package controllers
 import (
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 	"kermessio/config"
 	"kermessio/database"
 	"kermessio/models"
 	"math/rand"
 	"net/http"
+	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type Claims struct {
@@ -194,4 +196,61 @@ func Register(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Registration successful"})
+}
+
+// UpdateUser godoc
+// @Summary Update user
+// @Description Updates user details
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Param user body models.UserUpdate true "User details"
+// @Success 200 {string} string "User updated"
+// @Failure 400 {object} models.ErrorResponse "Invalid request"
+// @Failure 401 {object} models.ErrorResponse "Unauthorized"
+// @Failure 500 {object} models.ErrorResponse "Internal server error"
+// @Router /user/{id} [put]
+func UpdateUser(c *gin.Context) {
+	currentUser, exists := c.Get("currentUser")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	userID := currentUser.(models.User).ID
+	if userIDStr := c.Param("id"); userIDStr != "" {
+		id, err := strconv.Atoi(userIDStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+			return
+		}
+
+		if id != int(userID) {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
+	}
+
+	// Get the user from the database
+	var user models.User
+	if err := database.DB.First(&user, userID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// Bind JSON request body to the input struct
+	input := models.UserUpdate{}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Update the user in the database
+	if err := database.DB.Model(&user).Updates(input).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User updated"})
 }

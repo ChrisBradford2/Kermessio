@@ -34,6 +34,16 @@ type UserRegister struct {
 	School    School `json:"school" gorm:"foreignKey:SchoolID"`
 }
 
+type UserUpdate struct {
+	Username  string `json:"username" example:"jdoe"`
+	LastName  string `json:"last_name" example:"Doe"`
+	FirstName string `json:"first_name" example:"John"`
+	Email     string `json:"email" example:"jdoeœtest.com"`
+	Password  string `json:"password" example:"password"`
+	SchoolID  uint   `json:"school_id"`
+	School    School `json:"school" gorm:"foreignKey:SchoolID"`
+}
+
 type UserRegisterResponse struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`

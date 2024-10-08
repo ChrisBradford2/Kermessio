@@ -18,7 +18,7 @@ func GetTombolaByKermesse(c *gin.Context) {
 	}
 
 	var tombola models.Tombola
-	if err := database.DB.Preload("Participants").Where("kermesse_id = ?", kermesseID).First(&tombola).Error; err != nil {
+	if err := database.DB.Preload("Winner").Preload("Participants").Where("kermesse_id = ?", kermesseID).First(&tombola).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Tombola non trouvée pour cette kermesse"})
 		return
 	}

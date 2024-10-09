@@ -9,46 +9,48 @@ import (
 )
 
 func GetConversations(c *gin.Context) {
-	currentUser, exists := c.Get("currentUser")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non authentifié"})
-		return
-	}
+    currentUser, exists := c.Get("currentUser")
+    if !exists {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non authentifié"})
+        return
+    }
 
-	user := currentUser.(models.User)
+    user := currentUser.(models.User)
 
-	var conversations []struct {
-		UserID      uint   `json:"user_id"`
-		Username    string `json:"username"`
-		LastMessage string `json:"last_message"`
-	}
+    var conversations []struct {
+        UserID      uint   `json:"user_id"`
+        Username    string `json:"username"`
+        LastMessage string `json:"last_message"`
+    }
 
-	query := `
-		SELECT 
-			CASE 
-				WHEN chat_messages.sender_id = ? THEN chat_messages.receiver_id
-				ELSE chat_messages.sender_id
-			END AS user_id, 
-			users.username AS username, 
-			chat_messages.message AS last_message
-		FROM 
-			chat_messages
-		JOIN 
-			users ON users.id = CASE 
-									WHEN chat_messages.sender_id = ? THEN chat_messages.receiver_id
-									ELSE chat_messages.sender_id
-								END
-		WHERE 
-			chat_messages.sender_id = ? OR chat_messages.receiver_id = ?
-		ORDER BY 
-			chat_messages.created_at DESC
-	`
+    query := `
+        SELECT 
+            CASE 
+                WHEN chat_messages.sender_id = ? THEN chat_messages.receiver_id
+                ELSE chat_messages.sender_id
+            END AS user_id, 
+            users.username AS username, 
+            chat_messages.message AS last_message
+        FROM 
+            chat_messages
+        JOIN 
+            users ON users.id = CASE 
+                                    WHEN chat_messages.sender_id = ? THEN chat_messages.receiver_id
+                                    ELSE chat_messages.sender_id
+                                END
+        WHERE 
+            chat_messages.sender_id = ? OR chat_messages.receiver_id = ?
+        ORDER BY 
+            chat_messages.created_at DESC
+    `
 
-	err := database.DB.Raw(query, user.ID, user.ID, user.ID, user.ID).Scan(&conversations).Error
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des conversations"})
-		return
-	}
+    err := database.DB.Raw(query, user.ID, user.ID, user.ID, user.ID).Scan(&conversations).Error
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des conversations"})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{"conversations": conversations}) // Renvoi de la réponse JSON correcte
 }
 
 func GetChatHistory(c *gin.Context) {

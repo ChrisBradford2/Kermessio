@@ -13,7 +13,9 @@ import '../../blocs/kermesse_state.dart';
 import '../chat_details_page.dart';
 
 class ChatListPage extends StatefulWidget {
-  const ChatListPage({super.key});
+  final int kermesseId;
+
+  const ChatListPage({super.key, required this.kermesseId});
 
   @override
   ChatListPageState createState() => ChatListPageState();

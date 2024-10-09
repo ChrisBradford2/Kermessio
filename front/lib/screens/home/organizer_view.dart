@@ -1,10 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:front/config/app_config.dart';
 import 'package:front/scaffold/custom_scaffold.dart';
-import '../../blocs/kermesse_bloc.dart';
-import '../../blocs/kermesse_event.dart';
 import '../../models/kermesse_model.dart';
 import '../../repositories/kermesse_repository.dart';
 import '../create_kermesse_page.dart';
@@ -174,13 +171,11 @@ class OrganizerViewState extends State<OrganizerView> {
                       subtitle: Text('ID : ${_kermesses[index].id}'),
                       trailing: ElevatedButton(
                         onPressed: () {
-                          context.read<KermesseBloc>().add(SelectKermesseEvent(kermesseId: _kermesses[index].id));
-
-                          // Naviguer vers la page des détails de la kermesse
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => KermesseDetailsPage(kermesse: _kermesses[index]),
+                              builder: (context) =>
+                                  KermesseDetailsPage(kermesse: _kermesses[index]),
                             ),
                           );
                         },

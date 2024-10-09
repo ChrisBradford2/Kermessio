@@ -3,15 +3,16 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/stripe/stripe-go/v79"
-	"github.com/stripe/stripe-go/v79/webhook"
 	"io"
 	"kermessio/database"
 	"kermessio/models"
+	"log"
 	"net/http"
 	"os"
-	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stripe/stripe-go/v79"
+	"github.com/stripe/stripe-go/v79/webhook"
 )
 
 func HandleWebhook(c *gin.Context) {
@@ -52,59 +53,65 @@ func HandleWebhook(c *gin.Context) {
 }
 
 func handlePaymentIntentSucceeded(paymentIntent stripe.PaymentIntent) error {
-	// Récupérer l'ID de l'utilisateur
-	userID, ok := paymentIntent.Metadata["user_id"]
-	if !ok {
-		return fmt.Errorf("missing user_id in metadata")
-	}
+    // Récupérer l'ID de l'utilisateur
+    userID, ok := paymentIntent.Metadata["user_id"]
+    if !ok {
+        log.Println("Erreur: missing user_id in metadata")
+        return fmt.Errorf("missing user_id in metadata")
+    }
+    log.Println("user_id:", userID)
 
-	// Récupérer l'ID de la kermesse
-	kermesseIDStr, ok := paymentIntent.Metadata["kermesse_id"]
-	if !ok {
-		return fmt.Errorf("missing kermesse_id in metadata")
-	}
+    // Récupérer l'ID de la kermesse
+    kermesseID, ok := paymentIntent.Metadata["kermesse_id"]
+    if !ok {
+        log.Println("Erreur: missing kermesse_id in metadata")
+        return fmt.Errorf("missing kermesse_id in metadata")
+    }
+    log.Println("kermesse_id:", kermesseID)
 
-	// Convertir kermesseID de string à uint
-	kermesseID, err := strconv.ParseUint(kermesseIDStr, 10, 32)
-	if err != nil {
-		return fmt.Errorf("invalid kermesse_id: %w", err)
-	}
+    // Récupérer l'utilisateur
+    var user models.User
+    if err := database.DB.Where("id = ?", userID).First(&user).Error; err != nil {
+        log.Println("Erreur: user not found:", err)
+        return fmt.Errorf("user not found: %w", err)
+    }
 
-	// Récupérer l'utilisateur
-	var user models.User
-	if err := database.DB.Where("id = ?", userID).First(&user).Error; err != nil {
-		return fmt.Errorf("user not found: %w", err)
-	}
+    // Calculer les jetons à ajouter
+    eurosToCents := paymentIntent.Amount / 100 // 1€ = 1 jeton
+    tokensToAdd := eurosToCents
+    user.Tokens += tokensToAdd
 
-	// Calculer les jetons à ajouter
-	eurosToCents := paymentIntent.Amount / 100 // 1€ = 1 jeton
-	tokensToAdd := eurosToCents
-	user.Tokens += tokensToAdd
+    log.Println("Tokens to add:", tokensToAdd)
 
-	// Démarrer une transaction
-	tx := database.DB.Begin()
-	if err := tx.Save(&user).Error; err != nil {
-		tx.Rollback()
-		return fmt.Errorf("failed to update user tokens: %w", err)
-	}
+    // Démarrer une transaction
+    tx := database.DB.Begin()
+    if err := tx.Save(&user).Error; err != nil {
+        log.Println("Erreur lors de la mise à jour des jetons utilisateur:", err)
+        tx.Rollback()
+        return fmt.Errorf("failed to update user tokens: %w", err)
+    }
 
-	// Créer la transaction avec l'ID de la kermesse
-	transaction := models.Transaction{
-		UserID:     user.ID,
-		KermesseID: uint(kermesseID),
-		Amount:     eurosToCents,
-		Tokens:     tokensToAdd,
-	}
+    // Créer la transaction avec l'ID de la kermesse
+    transaction := models.Transaction{
+        UserID:     user.ID,
+        KermesseID: uint(1),
+        Amount:     eurosToCents,
+        Tokens:     tokensToAdd,
+    }
 
-	if err := tx.Create(&transaction).Error; err != nil {
-		tx.Rollback()
-		return fmt.Errorf("failed to create transaction: %w", err)
-	}
+    if err := tx.Create(&transaction).Error; err != nil {
+        log.Println("Erreur lors de la création de la transaction:", err)
+        tx.Rollback()
+        return fmt.Errorf("failed to create transaction: %w", err)
+    }
 
-	// Commit de la transaction
-	if err := tx.Commit().Error; err != nil {
-		return fmt.Errorf("failed to commit transaction: %w", err)
-	}
+    // Commit de la transaction
+    if err := tx.Commit().Error; err != nil {
+        log.Println("Erreur lors du commit de la transaction:", err)
+        return fmt.Errorf("failed to commit transaction: %w", err)
+    }
 
-	return nil
+    log.Println("Transaction réussie avec succès pour l'utilisateur:", userID)
+
+    return nil
 }

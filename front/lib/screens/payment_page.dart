@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
@@ -35,13 +36,20 @@ class PaymentPageState extends State<PaymentPage> {
       _isProcessing = true;
     });
 
+    print('Paiement en cours...');
     try {
       final kermesseState = BlocProvider.of<KermesseBloc>(context).state;
       if (kermesseState is KermesseSelected) {
         final int kermesseId = kermesseState.kermesseId;
+        if (kDebugMode) {
+          print('Kermesse ID: $kermesseId');
+        } // Log important pour vérifier l'ID
 
         // Créer un PaymentIntent via le backend en passant l'ID de la kermesse
         final clientSecret = await StripeService.createPaymentIntent(1000, 'eur', kermesseId);
+        if (kDebugMode) {
+          print('Client secret obtenu: $clientSecret');
+        } // Log important pour vérifier que le PaymentIntent est bien créé
 
         // Initialiser Stripe avec le client secret
         await Stripe.instance.initPaymentSheet(
@@ -58,21 +66,30 @@ class PaymentPageState extends State<PaymentPage> {
             merchantDisplayName: 'Kermessio',
           ),
         );
+        if (kDebugMode) {
+          print('Initialisation du PaymentSheet réussie');
+        } // Log pour valider l'initialisation
 
         await Stripe.instance.presentPaymentSheet();
+        if (kDebugMode) {
+          print('Paiement réalisé avec succès');
+        } // Log après la présentation du PaymentSheet
 
-        if (!mounted) return; // Ensure widget is still in the tree
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Paiement réussi !')),
         );
       } else {
-        if (!mounted) return; // Ensure widget is still in the tree
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Aucune kermesse sélectionnée')),
         );
       }
     } catch (e) {
-      if (!mounted) return; // Ensure widget is still in the tree
+      if (kDebugMode) {
+        print('Erreur lors du paiement: $e');
+      } // Log pour capturer l'erreur
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur lors du paiement : $e')),
       );

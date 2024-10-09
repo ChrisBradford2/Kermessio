@@ -24,7 +24,7 @@ class KermesseDetailsPageState extends State<KermesseDetailsPage> {
     return [
       const ViewStandsPage(),
       ViewGlobalRevenuePage(kermesseId: widget.kermesse.id),
-      const ChatListPage(),
+      ChatListPage(kermesseId: widget.kermesse.id),
       TombolaManagementPage(kermesseId: widget.kermesse.id),
       const PointsRankingPage(),
       const InteractiveMapPage(),

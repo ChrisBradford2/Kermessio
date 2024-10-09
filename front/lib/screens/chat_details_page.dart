@@ -36,7 +36,7 @@ class ChatDetailsPageState extends State<ChatDetailsPage> {
     super.initState();
 
     // Initier la connexion WebSocket
-    final wsUrl = 'wss://kermessio.xyz/ws/';
+    final wsUrl = 'ws://10.0.2.2:8080/ws';  // Remplacer par l'URL du serveur WebSocket
     _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
 
     // Récupérer les messages existants depuis l'API
